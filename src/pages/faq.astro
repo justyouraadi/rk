@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FAQ from '../views/FAQ.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Frequently Asked Questions | ${BRAND.name}`}
+  description="Answers to common questions regarding minimum order quantities, delivery timelines, graphic design assistance, and payment options."
+>
+  <FAQ client:load />
+</Layout>
+

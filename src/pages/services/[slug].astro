@@ -1,0 +1,22 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ServiceDetail from '../../views/ServiceDetail.jsx';
+import { SERVICES } from '../../data/siteData';
+
+export function getStaticPaths() {
+  return SERVICES.map((service) => ({
+    params: { slug: service.slug },
+    props: { service }
+  }));
+}
+
+const { service } = Astro.props;
+---
+
+<Layout
+  title={`${service.title} | RK Printers`}
+  description={service.short_description}
+>
+  <ServiceDetail client:load service={service} slug={service.slug} />
+</Layout>
+

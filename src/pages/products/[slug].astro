@@ -1,0 +1,22 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ProductDetail from '../../views/ProductDetail.jsx';
+import { PRODUCTS, INDUSTRIES } from '../../data/siteData';
+
+export function getStaticPaths() {
+  return PRODUCTS.map((product) => ({
+    params: { slug: product.slug },
+    props: { product }
+  }));
+}
+
+const { product } = Astro.props;
+---
+
+<Layout
+  title={`${product.name} | RK Printers`}
+  description={product.description}
+>
+  <ProductDetail client:load product={product} slug={product.slug} industries={INDUSTRIES} />
+</Layout>
+

@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CustomerPortal from '../views/CustomerPortal.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Customer Portal | ${BRAND.name}`}
+  description="Manage your orders, view quotations, track active print jobs, and review invoices."
+>
+  <CustomerPortal client:only="react" />
+</Layout>

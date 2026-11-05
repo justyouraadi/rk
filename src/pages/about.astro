@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import About from '../views/About.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`About Us | ${BRAND.name} - ${BRAND.tagline}`}
+  description={`Learn about ${BRAND.name}, our 10+ years of printing excellence, manufacturing facilities, and commitment to quality in ${BRAND.city}.`}
+>
+  <About client:load />
+</Layout>
+

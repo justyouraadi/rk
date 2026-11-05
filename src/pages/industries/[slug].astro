@@ -1,0 +1,27 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import IndustryDetail from '../../views/IndustryDetail.jsx';
+import { INDUSTRIES, PRODUCTS } from '../../data/siteData';
+
+export function getStaticPaths() {
+  return INDUSTRIES.map((industry) => ({
+    params: { slug: industry.slug },
+    props: {
+      industry,
+      products: PRODUCTS.filter((p) =>
+        (p.industries || []).includes(industry.slug) || (p.industries || []).includes(industry.id)
+      )
+    }
+  }));
+}
+
+const { industry, products } = Astro.props;
+---
+
+<Layout
+  title={`${industry.name} Printing & Branding Solutions | RK Printers`}
+  description={industry.description}
+>
+  <IndustryDetail client:load industry={industry} slug={industry.slug} products={products} />
+</Layout>
+

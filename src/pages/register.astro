@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Register from '../views/Register.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Create an Account | ${BRAND.name}`}
+  description="Sign up for an RK Printers account to place orders and manage invoices."
+>
+  <Register client:load />
+</Layout>

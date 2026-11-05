@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GetQuote from '../views/GetQuote.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Request a Custom Quotation | ${BRAND.name}`}
+  description="Tell us your printing or packaging requirements and get a personalized, competitive quotation within minutes."
+>
+  <GetQuote client:load />
+</Layout>
+

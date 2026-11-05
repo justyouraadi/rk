@@ -1,0 +1,82 @@
+-- AlterTable
+ALTER TABLE `admins` ADD COLUMN `settings` JSON NULL;
+
+-- AlterTable
+ALTER TABLE `customers` ADD COLUMN `customer_id` VARCHAR(191) NULL,
+    ADD COLUMN `gst_number` VARCHAR(191) NULL,
+    ADD COLUMN `status` ENUM('ACTIVE', 'INACTIVE', 'DRAFT', 'ARCHIVED') NOT NULL DEFAULT 'ACTIVE',
+    ADD COLUMN `total_revenue` DOUBLE NOT NULL DEFAULT 0,
+    ADD COLUMN `whatsapp` VARCHAR(191) NULL;
+
+-- AlterTable
+ALTER TABLE `leads` ADD COLUMN `customer_id` VARCHAR(191) NULL,
+    MODIFY `status` ENUM('NEW', 'CONTACTED', 'REQUIREMENT_RECEIVED', 'QUOTED', 'QUOTE_SENT', 'IN_PROGRESS', 'FOLLOW_UP', 'CONVERTED', 'REJECTED', 'LOST') NOT NULL DEFAULT 'NEW',
+    MODIFY `source` ENUM('WEBSITE', 'INSTAGRAM', 'FACEBOOK', 'META_ADS', 'WHATSAPP', 'PHONE', 'DIRECT', 'GOOGLE', 'REFERRAL', 'WALK_IN') NULL DEFAULT 'WEBSITE';
+
+-- AlterTable
+ALTER TABLE `media_items` ADD COLUMN `alt_text` VARCHAR(191) NULL,
+    ADD COLUMN `linked_id` VARCHAR(191) NULL,
+    ADD COLUMN `type` VARCHAR(191) NULL DEFAULT 'OTHER';
+
+-- AlterTable
+ALTER TABLE `orders` ADD COLUMN `priority` ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') NULL DEFAULT 'MEDIUM',
+    ADD COLUMN `status` VARCHAR(191) NULL,
+    ADD COLUMN `status_history` JSON NULL,
+    MODIFY `order_status` ENUM('PLACED', 'NEW', 'ARTWORK_PENDING', 'DESIGN_PENDING', 'DESIGNING', 'DESIGN_IN_PROGRESS', 'DESIGN_APPROVAL', 'PRINTING', 'FINISHING', 'QUALITY_CHECK', 'PACKING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PLACED';
+
+-- AlterTable
+ALTER TABLE `payments` ADD COLUMN `customer_id` VARCHAR(191) NULL,
+    ADD COLUMN `method` VARCHAR(191) NULL,
+    ADD COLUMN `note` TEXT NULL,
+    ADD COLUMN `payment_number` VARCHAR(191) NULL;
+
+-- AlterTable
+ALTER TABLE `products` ADD COLUMN `alt_text` VARCHAR(191) NULL,
+    ADD COLUMN `moq` INTEGER NULL DEFAULT 1,
+    MODIFY `price_type` ENUM('FIXED', 'TIERED', 'PER_UNIT', 'CUSTOM', 'STARTING_PRICE', 'FIXED_PRICE', 'CUSTOM_QUOTE') NULL DEFAULT 'FIXED';
+
+-- AlterTable
+ALTER TABLE `quotations` ADD COLUMN `delivery_charges` DOUBLE NOT NULL DEFAULT 0,
+    ADD COLUMN `other_charges` DOUBLE NOT NULL DEFAULT 0;
+
+-- CreateTable
+CREATE TABLE `notifications` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `message` TEXT NOT NULL,
+    `type` ENUM('MESSAGE', 'LEAD', 'ORDER', 'PAYMENT', 'SYSTEM') NOT NULL DEFAULT 'SYSTEM',
+    `audience` ENUM('ADMIN', 'USER', 'ALL') NOT NULL DEFAULT 'ADMIN',
+    `is_read` BOOLEAN NOT NULL DEFAULT false,
+    `metadata` JSON NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `import_jobs` (
+    `id` VARCHAR(191) NOT NULL,
+    `file_name` VARCHAR(191) NOT NULL,
+    `entity_type` VARCHAR(191) NOT NULL,
+    `mode` VARCHAR(191) NOT NULL DEFAULT 'UPSERT',
+    `total_rows` INTEGER NOT NULL DEFAULT 0,
+    `created` INTEGER NOT NULL DEFAULT 0,
+    `updated` INTEGER NOT NULL DEFAULT 0,
+    `skipped` INTEGER NOT NULL DEFAULT 0,
+    `errors_count` INTEGER NOT NULL DEFAULT 0,
+    `status` ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED') NOT NULL DEFAULT 'COMPLETED',
+    `error_report_url` TEXT NULL,
+    `summary` TEXT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateIndex
+CREATE UNIQUE INDEX `customers_customer_id_key` ON `customers`(`customer_id`);
+
+-- CreateIndex
+CREATE UNIQUE INDEX `payments_payment_number_key` ON `payments`(`payment_number`);
+

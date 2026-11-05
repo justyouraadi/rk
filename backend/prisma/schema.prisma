@@ -1,0 +1,552 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MEMBER
+}
+
+enum EntityStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+  ARCHIVED
+  OUT_OF_STOCK
+  COMING_SOON
+}
+
+enum ServiceCategory {
+  PRINTING
+  BRANDING
+  PACKAGING
+  PROMOTIONAL
+}
+
+enum PriceType {
+  FIXED
+  TIERED
+  PER_UNIT
+  CUSTOM
+  STARTING_PRICE
+  FIXED_PRICE
+  CUSTOM_QUOTE
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  REQUIREMENT_RECEIVED
+  QUOTED
+  QUOTE_SENT
+  IN_PROGRESS
+  FOLLOW_UP
+  CONVERTED
+  REJECTED
+  LOST
+}
+
+enum LeadSource {
+  WEBSITE
+  INSTAGRAM
+  FACEBOOK
+  META_ADS
+  WHATSAPP
+  PHONE
+  DIRECT
+  GOOGLE
+  REFERRAL
+  WALK_IN
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum OrderStatus {
+  PLACED
+  NEW
+  ARTWORK_PENDING
+  DESIGN_PENDING
+  DESIGNING
+  DESIGN_IN_PROGRESS
+  DESIGN_APPROVAL
+  PRINTING
+  FINISHING
+  QUALITY_CHECK
+  PACKING
+  READY
+  DISPATCHED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+enum PaymentMethod {
+  UPI
+  BANK_TRANSFER
+  CASH
+  CHEQUE
+  CARD
+  ONLINE
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PortfolioCategory {
+  PRINTING
+  BRANDING
+  PACKAGING
+  CORPORATE
+  EVENTS
+  PROMOTIONAL
+  CAMPAIGN
+}
+
+enum NotificationType {
+  MESSAGE
+  LEAD
+  ORDER
+  PAYMENT
+  SYSTEM
+}
+
+enum NotificationAudience {
+  ADMIN
+  USER
+  ALL
+}
+
+enum ImportJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model Admin {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  password       String
+  phone          String?   @unique
+  role           AdminRole @default(ADMIN)
+  profilePicture String?   @db.Text
+  settings       Json?
+  status         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("admins")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  password       String?
+  phone          String?   @unique
+  profilePicture String?   @db.Text
+  status         Boolean   @default(true)
+  company        String?
+  orders         Order[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Service {
+  id                String          @id @default(cuid())
+  title             String
+  slug              String          @unique
+  category          ServiceCategory
+  industries        Json?           // array of industry ids
+  short_description String?         @db.Text
+  description       String?         @db.Text
+  benefits          Json?           // array of strings
+  options           Json?           // array of strings
+  sizes             Json?           // array of strings
+  materials         Json?           // array of strings
+  finishing         Json?           // array of strings
+  starting_price    Float?
+  image_url         String?         @db.Text
+  gallery           Json?           // array of image urls
+  faqs              Json?           // array of { q, a }
+  status            EntityStatus    @default(ACTIVE)
+  is_featured       Boolean         @default(true)
+  sort_order        Int             @default(0)
+  seo_title         String?
+  seo_description   String?         @db.Text
+  seo_keywords      Json?           // array of strings
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("services")
+}
+
+model Industry {
+  id                String       @id @default(cuid())
+  name              String
+  slug              String       @unique
+  short_description String?      @db.Text
+  description       String?      @db.Text
+  image_url         String?      @db.Text
+  icon              String?      // Lucide icon name
+  accent_color      String?
+  status            EntityStatus @default(ACTIVE)
+  is_featured       Boolean      @default(false)
+  sort_order        Int          @default(0)
+  product_count     Int          @default(0)
+  seo_title         String?
+  seo_description   String?      @db.Text
+  seo_keywords      Json?        // array of strings
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@map("industries")
+}
+
+model Category {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  parent_id   String?
+  industry_id String?
+  description String?      @db.Text
+  image_url   String?      @db.Text
+  status      EntityStatus @default(ACTIVE)
+  sort_order  Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id                 String           @id @default(cuid())
+  name               String
+  slug               String           @unique
+  sku                String?          @unique
+  category           ServiceCategory?
+  category_id        String?
+  category_ids       Json?            // array of category ids
+  sub_category_id    String?
+  industries         Json?            // array of industry ids
+  description        String?          @db.Text
+  short_description  String?          @db.Text
+  specifications     String?          @db.Text
+  key_benefits       Json?            // array of strings
+  use_cases          Json?            // array of strings
+  size               String?
+  material           String?
+  finishing          String?
+  gsm                String?
+  printing_type      String?
+  production_time    String?
+  sizes              Json?
+  materials          Json?
+  finishings         Json?
+  quantity_options   Json?
+  options            Json?
+  variants           Json?
+  price_type         PriceType?       @default(FIXED)
+  pricing_unit       String?          @default("piece")
+  custom_pricing     Boolean          @default(false)
+  price_tiers        Json?            // array of { label, quantity, price }
+  starting_price     Float?
+  min_order_quantity Int?             @default(1)
+  moq                Int?             @default(1)
+  is_popular         Boolean          @default(false)
+  is_featured        Boolean          @default(false)
+  status             ProductStatus    @default(ACTIVE)
+  sort_order         Int              @default(0)
+  image_url          String?          @db.Text
+  gallery            Json?
+  alt_text           String?
+  seo_title          String?
+  seo_description    String?          @db.Text
+  seo_keywords       Json?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@map("products")
+}
+
+model Lead {
+  id              String      @id @default(cuid())
+  lead_id         String?     @unique
+  name            String
+  phone           String
+  whatsapp        String?
+  email           String?
+  business_name   String?
+  location        String?
+  requirement     String?     @db.Text
+  service         String?
+  product         String?
+  product_id      String?
+  industry        String?
+  category        String?
+  variant         String?
+  quantity        String?
+  size            String?
+  material        String?
+  finishing       String?
+  expected_date   String?
+  status          LeadStatus  @default(NEW)
+  source          LeadSource? @default(WEBSITE)
+  priority        Priority?   @default(MEDIUM)
+  notes           Json?       // array of note entries
+  estimated_value Float?
+  assigned_to     String?
+  customer_id     String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("leads")
+}
+
+model Quotation {
+  id               String          @id @default(cuid())
+  quotation_number String          @unique
+  lead_id          String?
+  customer_id      String?
+  customer_name    String
+  customer_phone   String?
+  customer_email   String?
+  items            Json            // array of line items { description, quantity, rate, amount }
+  subtotal         Float
+  discount         Float           @default(0)
+  gst_percent      Float           @default(18)
+  gst_amount       Float           @default(0)
+  delivery_charges Float           @default(0)
+  other_charges    Float           @default(0)
+  total_amount     Float
+  status           QuotationStatus @default(DRAFT)
+  valid_until      String?
+  notes            String?         @db.Text
+  terms            String?         @db.Text
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@map("quotations")
+}
+
+model Order {
+  id               String        @id @default(cuid())
+  order_number     String        @unique
+  user_id          String?
+  user             User?         @relation(fields: [user_id], references: [id])
+  customer_id      String?
+  customer_name    String
+  customer_phone   String?
+  customer_email   String?
+  lead_id          String?
+  quotation_id     String?
+  items            Json          // array of order items
+  total_amount     Float
+  paid_amount      Float         @default(0)
+  pending_amount   Float         @default(0)
+  payment_status   PaymentStatus @default(PENDING)
+  order_status     OrderStatus   @default(PLACED)
+  status           String?
+  status_history   Json?
+  priority         Priority?     @default(MEDIUM)
+  delivery_date    String?
+  shipping_address String?       @db.Text
+  tracking_id      String?
+  courier_name     String?
+  notes            String?       @db.Text
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("orders")
+}
+
+model Payment {
+  id              String            @id @default(cuid())
+  payment_id      String?           @unique
+  payment_number  String?           @unique
+  order_id        String?
+  order_number    String?
+  customer_id     String?
+  customer_name   String?
+  amount          Float
+  method          String?
+  payment_method  PaymentMethod?    @default(UPI)
+  transaction_ref String?
+  status          TransactionStatus @default(SUCCESS)
+  note            String?           @db.Text
+  paid_at         DateTime          @default(now())
+  notes           String?           @db.Text
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("payments")
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  name        String
+  business    String?
+  photo_url   String?  @db.Text
+  rating      Int      @default(5)
+  review      String   @db.Text
+  is_approved Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("reviews")
+}
+
+model Offer {
+  id             String   @id @default(cuid())
+  title          String
+  description    String   @db.Text
+  image_url      String?  @db.Text
+  discount       String?
+  starting_price Float?
+  valid_from     String?
+  valid_until    String?
+  cta_text       String?  @default("GET A QUOTE")
+  is_active      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("offers")
+}
+
+model PortfolioItem {
+  id          String            @id @default(cuid())
+  title       String
+  description String?           @db.Text
+  category    PortfolioCategory
+  client      String?
+  date        String?
+  image_url   String            @db.Text
+  gallery     Json?
+  is_featured Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("portfolio_items")
+}
+
+model MediaItem {
+  id         String   @id @default(cuid())
+  filename   String
+  url        String   @db.Text
+  file_type  String?
+  file_size  Int?
+  dimensions String?
+  type       String?  @default("OTHER")
+  linked_id  String?
+  alt_text   String?
+  tags       Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("media_items")
+}
+
+model Customer {
+  id            String       @id @default(cuid())
+  customer_id   String?      @unique
+  name          String
+  email         String?
+  phone         String
+  whatsapp      String?
+  business_name String?
+  address       String?      @db.Text
+  gstin         String?
+  gst_number    String?
+  status        EntityStatus @default(ACTIVE)
+  total_orders  Int          @default(0)
+  total_spent   Float        @default(0)
+  total_revenue Float        @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("customers")
+}
+
+model Notification {
+  id         String               @id @default(cuid())
+  title      String
+  message    String               @db.Text
+  type       NotificationType     @default(SYSTEM)
+  audience   NotificationAudience @default(ADMIN)
+  is_read    Boolean              @default(false)
+  metadata   Json?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  @@map("notifications")
+}
+
+model ImportJob {
+  id               String          @id @default(cuid())
+  file_name        String
+  entity_type      String
+  mode             String          @default("UPSERT")
+  total_rows       Int             @default(0)
+  created          Int             @default(0)
+  updated          Int             @default(0)
+  skipped          Int             @default(0)
+  errors_count     Int             @default(0)
+  status           ImportJobStatus @default(COMPLETED)
+  error_report_url String?         @db.Text
+  summary          String?         @db.Text
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@map("import_jobs")
+}

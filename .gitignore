@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Production & Build outputs
+dist/
+dist-ssr/
+build/
+.astro/
+.vite/
+
+# Environment Variables & Secrets (NEVER commit secrets)
+.env
+.env.production
+.env.staging
+.env.local
+.env.*.local
+backend/.env
+backend/.env.*
+admin/.env
+admin/.env.*
+!.env.example
+!backend/.env.example
+!admin/.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing & Browser Automation Cache
+coverage/
+.nyc_output/
+.playwright-mcp/
+playwright-report/
+test-results/
+
+# Editor & IDE directories
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-workspace
+*.sublime-project
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+# Temporary & Cache files
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+tmp/
+temp/
+

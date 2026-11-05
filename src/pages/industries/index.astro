@@ -1,0 +1,14 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Services from '../../views/Services.jsx';
+import { INDUSTRIES } from '../../data/siteData';
+import { BRAND } from '../../lib/brand';
+---
+
+<Layout
+  title={`Industry Printing Solutions | ${BRAND.name}`}
+  description="Printing, branding, and packaging solutions tailored specifically for your industry — healthcare, schools, corporate, retail, real estate, and restaurants."
+>
+  <Services client:load initialIndustries={INDUSTRIES} />
+</Layout>
+

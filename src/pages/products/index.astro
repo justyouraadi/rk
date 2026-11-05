@@ -1,0 +1,14 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Products from '../../views/Products.jsx';
+import { PRODUCTS, INDUSTRIES } from '../../data/siteData';
+import { BRAND } from '../../lib/brand';
+---
+
+<Layout
+  title={`Product Catalogue | ${BRAND.name} - Printing & Packaging`}
+  description="Explore our complete catalogue of business cards, doctor prescription pads, bill books, product boxes, stickers, standees, and custom apparel."
+>
+  <Products client:load initialProducts={PRODUCTS} initialIndustries={INDUSTRIES} />
+</Layout>
+

@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TrackOrder from '../views/TrackOrder.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Track Your Print Order Status | ${BRAND.name}`}
+  description="Enter your Order ID or phone number to check the real-time design, printing, quality check, and dispatch status of your order."
+>
+  <TrackOrder client:load />
+</Layout>
+

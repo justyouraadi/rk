@@ -1,0 +1,353 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 0 0% 9%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 9%;
+        --primary: 0 0% 9%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 96.1%;
+        --secondary-foreground: 0 0% 9%;
+        --muted: 0 0% 96.1%;
+        --muted-foreground: 0 0% 45.1%;
+        --accent: 0 0% 96.1%;
+        --accent-foreground: 0 0% 9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 89.8%;
+        --input: 0 0% 89.8%;
+        --ring: 0 0% 3.9%;
+        --radius: 0.75rem;
+        --font-heading: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+        --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        --font-display: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+        /* RK Brand */
+        --rk-red: 357 85% 52%;
+        --rk-red-dark: 357 80% 42%;
+        --rk-red-foreground: 0 0% 100%;
+        --c-cyan: 187 100% 42%;
+        --c-magenta: 327 100% 47%;
+        --c-yellow: 48 100% 50%;
+        --c-key: 0 0% 9%;
+        --ink: 0 0% 9%;
+        --ink-soft: 0 0% 26%;
+
+        --chart-1: 357 85% 52%;
+        --chart-2: 187 100% 42%;
+        --chart-3: 327 100% 47%;
+        --chart-4: 48 100% 50%;
+        --chart-5: 0 0% 9%;
+        --sidebar-background: 0 0% 100%;
+        --sidebar-foreground: 0 0% 9%;
+        --sidebar-primary: 357 85% 52%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 0 0% 96.1%;
+        --sidebar-accent-foreground: 0 0% 9%;
+        --sidebar-border: 0 0% 89.8%;
+        --sidebar-ring: 357 85% 52%;
+    }
+
+    .dark {
+        --background: 0 0% 5%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 7%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 7%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 0 0% 9%;
+        --secondary: 0 0% 14.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 14.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 0 0% 14.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 357 80% 52%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 16%;
+        --input: 0 0% 16%;
+        --ring: 357 85% 52%;
+        --sidebar-background: 0 0% 7%;
+        --sidebar-foreground: 0 0% 98%;
+        --sidebar-border: 0 0% 16%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground font-body antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+        @apply font-heading;
+        letter-spacing: -0.02em;
+    }
+}
+
+@layer components {
+    .rk-input {
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 1px solid hsl(var(--border));
+        background: #fff;
+        padding-top: 0.625rem;
+        padding-bottom: 0.625rem;
+        padding-left: 0.875rem;
+        padding-right: 0.875rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: hsl(var(--ink));
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+    }
+
+    .rk-input:focus {
+        border-color: hsl(var(--rk-red));
+        box-shadow: 0 0 0 3px hsl(var(--rk-red) / 0.12);
+    }
+
+    .rk-input::placeholder {
+        color: hsl(var(--ink-soft) / 0.6);
+    }
+
+    /* Auto-indent input when a leading icon (e.g. Search, Mail, Lock) is present */
+    .relative > svg.absolute:first-child ~ input.rk-input,
+    .relative > svg.absolute:first-child ~ .rk-input,
+    .relative > svg.absolute:first-child + input.rk-input,
+    .relative > svg.absolute:first-child + .rk-input {
+        padding-left: 2.5rem;
+    }
+
+    /* Ensure absolute icons don't intercept input clicks */
+    .relative > svg.absolute {
+        pointer-events: none;
+    }
+}
+
+@layer utilities {
+    .text-rk-red {
+        color: hsl(var(--rk-red));
+    }
+
+    .bg-rk-red {
+        background-color: hsl(var(--rk-red));
+    }
+
+    .bg-ink {
+        background-color: hsl(var(--ink));
+    }
+
+    .text-ink-soft {
+        color: hsl(var(--ink-soft));
+    }
+
+    .border-rk-red {
+        border-color: hsl(var(--rk-red));
+    }
+
+    .ring-rk-red {
+        box-shadow: 0 0 0 2px hsl(var(--rk-red));
+    }
+
+    .cmyk-bar {
+        background: linear-gradient(90deg,
+                hsl(var(--c-cyan)) 0 25%,
+                hsl(var(--c-magenta)) 25% 50%,
+                hsl(var(--c-yellow)) 50% 75%,
+                hsl(var(--ink)) 75% 100%);
+    }
+
+    .cmyk-dot {
+        background: conic-gradient(hsl(var(--c-cyan)) 0 25%, hsl(var(--c-magenta)) 25% 50%, hsl(var(--c-yellow)) 50% 75%, hsl(var(--ink)) 75% 100%);
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+}
+
+/* ============================================================
+   CINEMATIC ANIMATION SYSTEM (public pages only)
+   ============================================================ */
+
+/* Hide native cursor on desktop when the custom cursor is active */
+.cursor-cinematic,
+.cursor-cinematic * {
+    cursor: none !important;
+}
+
+/* Custom cursor */
+.cinematic-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 90;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.cc-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border-radius: 9999px;
+    background: hsl(var(--rk-red));
+}
+
+.cc-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    margin: -18px 0 0 -18px;
+    border-radius: 9999px;
+    border: 1.5px solid hsl(var(--rk-red) / 0.7);
+    transition: width 0.25s cubic-bezier(0.65, 0, 0.35, 1),
+        height 0.25s cubic-bezier(0.65, 0, 0.35, 1),
+        margin 0.25s cubic-bezier(0.65, 0, 0.35, 1),
+        border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.cc-ring-hover {
+    width: 52px;
+    height: 52px;
+    margin: -26px 0 0 -26px;
+    border-color: hsl(var(--rk-red) / 0.35);
+    background: hsl(var(--rk-red) / 0.06);
+}
+
+/* Page transition veil — blurs the incoming page then clears */
+.page-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+/* Scroll reveal — sections are visible by default, with smooth reveal enhancement */
+main section,
+main [data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+}
+
+main section.reveal-in,
+main [data-reveal].reveal-in {
+    opacity: 1;
+    transform: none;
+    filter: none;
+}
+
+/* Stagger children of a revealed section */
+main section.reveal-in>*:nth-child(1) {
+    transition-delay: 0ms;
+}
+
+main section.reveal-in>*:nth-child(2) {
+    transition-delay: 70ms;
+}
+
+main section.reveal-in>*:nth-child(3) {
+    transition-delay: 140ms;
+}
+
+main section.reveal-in>*:nth-child(4) {
+    transition-delay: 210ms;
+}
+
+main section.reveal-in>*:nth-child(5) {
+    transition-delay: 280ms;
+}
+
+main section.reveal-in>*:nth-child(6) {
+    transition-delay: 350ms;
+}
+
+/* Subtle film grain overlay */
+.cinematic-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Premium hover micro-interactions */
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1),
+        box-shadow 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+}
+
+a:active,
+button:active,
+[role="button"]:active {
+    transform: translateY(1px);
+}
+
+/* Reduced motion — disable all cinematic transforms */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    main section,
+    main [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
+    .page-veil {
+        display: none !important;
+    }
+
+    .cinematic-grain {
+        display: none !important;
+    }
+}

@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Terms } from '../views/Legal.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Terms & Conditions | ${BRAND.name}`}
+  description="Terms and conditions governing printing orders, design approvals, delivery, and payments."
+>
+  <Terms client:load />
+</Layout>
+

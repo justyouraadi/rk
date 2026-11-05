@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Contact from '../views/Contact.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Contact Us | ${BRAND.name} - ${BRAND.city}`}
+  description={`Reach out to ${BRAND.name} on N.H. 8 Kotputli, Rajasthan. Call ${BRAND.phone1} or send a message for instant printing quotes.`}
+>
+  <Contact client:load />
+</Layout>
+

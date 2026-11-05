@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Login from '../views/Login.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Customer Login | ${BRAND.name}`}
+  description="Log in to access your orders, saved quotations, and account history."
+>
+  <Login client:load />
+</Layout>

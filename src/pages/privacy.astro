@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Privacy from '../views/Legal.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`Privacy Policy | ${BRAND.name}`}
+  description="How RK Printers handles and protects your personal and business data."
+>
+  <Privacy client:load />
+</Layout>
+
