@@ -1,4 +1,5 @@
-import { Prisma } from "@prisma/client";
+import prismaPkg from "@prisma/client";
+const { Prisma } = prismaPkg;
 import AppError from "./app.error.js";
 import { StatusCodes } from "http-status-codes";
 
