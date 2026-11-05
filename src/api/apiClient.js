@@ -1,7 +1,7 @@
 import { INDUSTRIES, SERVICES, PRODUCTS, REVIEWS, OFFERS, PORTFOLIO_ITEMS } from '@/data/siteData';
 
 // API Base URL connecting to our Express/Prisma backend
-export const API_BASE_URL = import.meta.env.PUBLIC_API_URL ||
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
     (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
         ? `${window.location.origin}/api/v1`
         : 'http://localhost:3000/api/v1');
