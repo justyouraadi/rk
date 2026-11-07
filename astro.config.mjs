@@ -7,6 +7,7 @@ export default defineConfig({
   redirects: {
     '/quote': '/get-quote',
     '/industries/hospitality': '/industries/hotels-hospitality',
+    '/industries/wedding': '/industries/wedding-personal',
   },
   integrations: [
     react(),

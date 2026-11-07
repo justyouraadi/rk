@@ -45,9 +45,9 @@ export default function Home(props) {
 
     const stats = [
         { icon: Award, value: "10+", label: "Years Experience" },
-        { icon: Users, value: "5,000+", label: "Happy Clients" },
-        { icon: Package, value: "50,000+", label: "Orders Delivered" },
-        { icon: Clock, value: "48h", label: "Fast Turnaround" },
+        { icon: Users, value: "12", label: "Industry Sectors" },
+        { icon: Package, value: "4", label: "Core Categories" },
+        { icon: Clock, value: "Fast", label: "Turnaround" },
     ];
 
     return (
@@ -274,7 +274,7 @@ export default function Home(props) {
                         <h2 className="mt-3 font-heading font-extrabold text-3xl sm:text-4xl">A Technology-Enabled Printing & Branding Company</h2>
                         <p className="mt-4 text-white/60 max-w-lg">We combine a large printing setup with a modern digital workflow — from enquiry to delivery, everything is tracked, transparent and fast.</p>
                         <div className="mt-8 grid sm:grid-cols-2 gap-4">
-                            {[["Professional Quality", "Premium materials & colour-accurate CMYK printing."], ["Affordable Pricing", "Transparent quotes with no hidden charges."], ["Customized Solutions", "Tailored to your brand, size & quantity."], ["Fast Turnaround", "Most orders ready within 48 hours."]].map((f, i) => (
+                            {[["Professional Quality", "Premium materials & colour-accurate CMYK printing."], ["Affordable Pricing", "Transparent quotes with no hidden charges."], ["Customized Solutions", "Tailored to your brand, size & quantity."], ["Fast Turnaround", "Express production & reliable delivery according to order specifications."]].map((f, i) => (
                                 <div key={i} className="flex gap-3">
                                     <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-rk-red"><Check className="h-3.5 w-3.5 text-white" /></span>
                                     <div><p className="font-semibold text-sm">{f[0]}</p><p className="text-xs text-white/50 mt-0.5">{f[1]}</p></div>

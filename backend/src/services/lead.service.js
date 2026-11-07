@@ -53,6 +53,11 @@ class LeadService {
         "finishing", "expected_date", "status", "source", "priority",
         "notes", "estimated_value", "assigned_to", "customer_id",
       ];
+      const validSources = ["WEBSITE", "INSTAGRAM", "FACEBOOK", "META_ADS", "WHATSAPP", "PHONE", "DIRECT", "GOOGLE", "REFERRAL", "WALK_IN"];
+      if (data.source && !validSources.includes(data.source)) {
+        data.source = "WEBSITE";
+      }
+
       const cleanData = {};
       for (const k of allowedFields) {
         if (data[k] !== undefined) cleanData[k] = data[k];

@@ -12,7 +12,7 @@ export const BRAND = {
     email: "rkprinters.kotputli@gmail.com",
     instagram: "https://www.instagram.com/rkprinters_kotputli",
     facebook: "https://www.facebook.com/rkprinterskotputli",
-    heroImage: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
+    heroImage: "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?auto=format&fit=crop&w=1200&q=80",
 };
 
 export const WHATSAPP_NUMBER = "917426919797";
@@ -34,7 +34,7 @@ export const SERVICE_CATEGORIES = [
 ];
 
 export const ORDER_STATUSES = [
-    "PLACED", "NEW", "DESIGN_PENDING", "DESIGN_IN_PROGRESS", "DESIGN_APPROVAL", "PRINTING",
+    "PLACED", "DESIGN_PENDING", "DESIGN_IN_PROGRESS", "DESIGN_APPROVAL", "PRINTING",
     "FINISHING", "QUALITY_CHECK", "PACKING", "READY", "DISPATCHED", "DELIVERED", "COMPLETED"
 ];
 

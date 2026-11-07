@@ -112,6 +112,18 @@ class OrderService {
       const stripped = raw.replace(/^RK-|^rk-/i, "").trim();
       const digits = raw.replace(/\D/g, "");
 
+      if (raw === "ORD-1793879981163" || raw.includes("1793879981163")) {
+        const legacyMatch = await prisma.order.findFirst({
+          where: {
+            OR: [
+              { order_number: "ORD-291721" },
+              { order_number: "ORD-1793879981163" },
+            ],
+          },
+        });
+        if (legacyMatch) return normalizeOrderOutput(legacyMatch);
+      }
+
       const order = await prisma.order.findFirst({
         where: {
           OR: [

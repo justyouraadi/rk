@@ -34,6 +34,8 @@ export default function AdminProducts() {
     const [form, setForm] = useState({});
     const [saving, setSaving] = useState(false);
     const [bulkOpen, setBulkOpen] = useState(false);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const load = async () => {
         setLoading(true);
@@ -49,7 +51,10 @@ export default function AdminProducts() {
     };
     useEffect(() => { load(); }, []);
 
-    const indName = (id) => industries.find((i) => i.id === id)?.name || id;
+    const indName = (idOrSlug) => {
+        const match = industries.find((i) => i.id === idOrSlug || i.slug === idOrSlug);
+        return match ? match.name : idOrSlug;
+    };
 
     const filtered = useMemo(() => items.filter((p) => {
         if (q && !JSON.stringify(p).toLowerCase().includes(q.toLowerCase())) return false;
@@ -142,6 +147,10 @@ export default function AdminProducts() {
     const toggleIndustry = (id) => set("industries", (form.industries || []).includes(id) ? (form.industries || []).filter((x) => x !== id) : [...(form.industries || []), id]);
     const toggleArr = (key, val) => set(key, (form[key] || []).includes(val) ? (form[key] || []).filter((x) => x !== val) : [...(form[key] || []), val]);
 
+    const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+    const safePage = Math.min(Math.max(1, page), totalPages);
+    const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
     return (
         <div className="space-y-5">
             <div className="flex items-center justify-between flex-wrap gap-3">
@@ -205,7 +214,7 @@ export default function AdminProducts() {
                             <th className="text-right px-4 py-3 font-semibold">Actions</th>
                         </tr></thead>
                         <tbody className="divide-y divide-black/5">
-                            {filtered.map((p) => {
+                            {paged.map((p) => {
                                 const c = checkCompleteness(p);
                                 return (
                                     <tr key={p.id} className={`hover:bg-muted/30 ${selected.has(p.id) ? "bg-rk-red/5" : ""}`}>
@@ -231,6 +240,41 @@ export default function AdminProducts() {
                             })}
                         </tbody>
                     </table></div>
+                )}
+                {filtered.length > 0 && (
+                    <div className="flex items-center justify-between flex-wrap gap-3 px-4 py-3 border-t border-black/8 bg-muted/20 text-xs text-ink-soft">
+                        <div className="flex items-center gap-2">
+                            <span>Rows per page:</span>
+                            <select
+                                className="rk-input py-1 px-2 text-xs w-16"
+                                value={pageSize}
+                                onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={25}>25</option>
+                                <option value={50}>50</option>
+                            </select>
+                            <span>Showing {Math.min((safePage - 1) * pageSize + 1, filtered.length)} to {Math.min(safePage * pageSize, filtered.length)} of {filtered.length} products</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                disabled={safePage <= 1}
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                className="px-2.5 py-1 rounded border border-black/10 bg-white font-medium hover:bg-muted disabled:opacity-40"
+                            >
+                                Prev
+                            </button>
+                            <span className="font-semibold text-ink">Page {safePage} of {totalPages}</span>
+                            <button
+                                disabled={safePage >= totalPages}
+                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                className="px-2.5 py-1 rounded border border-black/10 bg-white font-medium hover:bg-muted disabled:opacity-40"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
                 )}
             </div>
 
@@ -376,6 +420,7 @@ export default function AdminProducts() {
 function ArrEditor({ label, arr = [], onChange, presets = [] }) {
     const [input, setInput] = useState("");
     const add = (v) => { if (v && !arr.includes(v)) onChange([...arr, v]); setInput(""); };
+
     return (
         <div>
             <label className="block text-sm font-semibold mb-1.5">{label}</label>

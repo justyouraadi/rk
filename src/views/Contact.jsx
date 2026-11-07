@@ -23,8 +23,8 @@ export default function Contact() {
                 phone: form.phone.trim(),
                 email: form.email.trim() || null,
                 requirement: `[Contact Form Message]: ${form.message.trim()}`,
-                service: "INQUIRY",
-                source: "CONTACT_FORM",
+                service: "PRINTING",
+                source: "WEBSITE",
                 status: "NEW",
                 lead_id: refId,
             });

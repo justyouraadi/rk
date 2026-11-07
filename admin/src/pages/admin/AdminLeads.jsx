@@ -10,6 +10,9 @@ export default function AdminLeads() {
     const [q, setQ] = useState("");
     const [status, setStatus] = useState("ALL");
     const [source, setSource] = useState("ALL");
+    const [sortBy, setSortBy] = useState("NEWEST");
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [sel, setSel] = useState(null);
     const [loading, setLoading] = useState(true);
     const [note, setNote] = useState("");
@@ -30,6 +33,18 @@ export default function AdminLeads() {
         (source === "ALL" || l.source === source) &&
         (!q || (l.name + l.phone + l.requirement).toLowerCase().includes(q.toLowerCase()))
     );
+
+    const sorted = [...filtered].sort((a, b) => {
+        if (sortBy === "NEWEST") return new Date(b.created_date || b.createdAt) - new Date(a.created_date || a.createdAt);
+        if (sortBy === "OLDEST") return new Date(a.created_date || a.createdAt) - new Date(b.created_date || b.createdAt);
+        if (sortBy === "NAME_ASC") return (a.name || "").localeCompare(b.name || "");
+        if (sortBy === "STATUS") return (a.status || "").localeCompare(b.status || "");
+        return 0;
+    });
+
+    const totalPages = Math.ceil(sorted.length / pageSize) || 1;
+    const safePage = Math.min(Math.max(1, page), totalPages);
+    const paged = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
 
     const updateStatus = async (id, st) => {
         try { await api.entities.Lead.update(id, { status: st }); toast({ title: "Status updated" }); load(); if (sel) setSel({ ...sel, status: st }); }
@@ -90,19 +105,25 @@ export default function AdminLeads() {
 
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" /><input className="rk-input pl-10" placeholder="Search name, phone, requirement..." value={q} onChange={e => setQ(e.target.value)} /></div>
-                <select className="rk-input sm:w-44" value={status} onChange={e => setStatus(e.target.value)}><option value="ALL">All Status</option>{LEAD_STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}</select>
-                <select className="rk-input sm:w-44" value={source} onChange={e => setSource(e.target.value)}><option value="ALL">All Sources</option>{LEAD_SOURCES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}</select>
+                <select className="rk-input sm:w-44" value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}><option value="ALL">All Status</option>{LEAD_STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}</select>
+                <select className="rk-input sm:w-44" value={source} onChange={e => { setSource(e.target.value); setPage(1); }}><option value="ALL">All Sources</option>{LEAD_SOURCES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}</select>
+                <select className="rk-input sm:w-44" value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(1); }}>
+                    <option value="NEWEST">Newest First</option>
+                    <option value="OLDEST">Oldest First</option>
+                    <option value="NAME_ASC">Name (A–Z)</option>
+                    <option value="STATUS">Status</option>
+                </select>
             </div>
 
             <div className="rounded-2xl bg-white border border-black/8 overflow-hidden">
-                {loading ? <p className="p-8 text-center text-ink-soft">Loading...</p> : filtered.length === 0 ? <p className="p-8 text-center text-ink-soft">No leads found.</p> : (
+                {loading ? <p className="p-8 text-center text-ink-soft">Loading...</p> : sorted.length === 0 ? <p className="p-8 text-center text-ink-soft">No leads found.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50 text-ink-soft text-xs uppercase tracking-wider">
                                 <tr><th className="text-left px-4 py-3 font-semibold">Lead ID</th><th className="text-left px-4 py-3 font-semibold">Name</th><th className="text-left px-4 py-3 font-semibold">Phone</th><th className="text-left px-4 py-3 font-semibold">Service</th><th className="text-left px-4 py-3 font-semibold">Source</th><th className="text-left px-4 py-3 font-semibold">Status</th><th className="text-left px-4 py-3 font-semibold">Date</th></tr>
                             </thead>
                             <tbody className="divide-y divide-black/5">
-                                {filtered.map(l => (
+                                {paged.map(l => (
                                     <tr key={l.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => setSel(l)}>
                                         <td className="px-4 py-3 font-mono text-xs text-ink-soft">{l.lead_id || "—"}</td>
                                         <td className="px-4 py-3 font-semibold text-ink">{l.name}</td>
@@ -115,6 +136,40 @@ export default function AdminLeads() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                )}
+                {sorted.length > 0 && (
+                    <div className="flex items-center justify-between flex-wrap gap-3 px-4 py-3 border-t border-black/8 bg-muted/20 text-xs text-ink-soft">
+                        <div className="flex items-center gap-2">
+                            <span>Rows per page:</span>
+                            <select
+                                className="rk-input py-1 px-2 text-xs w-16"
+                                value={pageSize}
+                                onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={25}>25</option>
+                            </select>
+                            <span>Showing {Math.min((safePage - 1) * pageSize + 1, sorted.length)} to {Math.min(safePage * pageSize, sorted.length)} of {sorted.length} leads</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                disabled={safePage <= 1}
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                className="px-2.5 py-1 rounded border border-black/10 bg-white font-medium hover:bg-muted disabled:opacity-40"
+                            >
+                                Prev
+                            </button>
+                            <span className="font-semibold text-ink">Page {safePage} of {totalPages}</span>
+                            <button
+                                disabled={safePage >= totalPages}
+                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                className="px-2.5 py-1 rounded border border-black/10 bg-white font-medium hover:bg-muted disabled:opacity-40"
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

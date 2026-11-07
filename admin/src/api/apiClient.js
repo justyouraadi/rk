@@ -76,11 +76,25 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
     }
 }
 
+const entityListCache = new Map();
+
+function invalidateEntityCache(entity) {
+    for (const key of entityListCache.keys()) {
+        if (key.startsWith(`${entity}:`)) entityListCache.delete(key);
+    }
+}
+
 function createEntityHandler(entityName) {
     const route = ENTITY_ROUTES[entityName] || `entities/${entityName.toLowerCase()}`;
 
     return {
         list: async (sort, limit) => {
+            const cacheKey = `${entityName}:${sort || ''}:${limit || ''}`;
+            const cached = entityListCache.get(cacheKey);
+            if (cached && Date.now() - cached.time < 30000) {
+                return cached.data;
+            }
+
             try {
                 const params = new URLSearchParams();
                 if (sort) params.append('sort', sort);
@@ -92,6 +106,7 @@ function createEntityHandler(entityName) {
                 if (res.ok) {
                     const json = await res.json();
                     if (json.success && Array.isArray(json.data)) {
+                        entityListCache.set(cacheKey, { data: json.data, time: Date.now() });
                         return json.data;
                     }
                 }
@@ -157,6 +172,7 @@ function createEntityHandler(entityName) {
         },
 
         create: async (data) => {
+            invalidateEntityCache(entityName);
             try {
                 const res = await fetchWithTimeout(`${API_BASE_URL}/${route}`, {
                     method: 'POST',
@@ -185,6 +201,7 @@ function createEntityHandler(entityName) {
         },
 
         update: async (id, data) => {
+            invalidateEntityCache(entityName);
             try {
                 const res = await fetchWithTimeout(`${API_BASE_URL}/${route}/${id}`, {
                     method: 'PUT',
@@ -216,6 +233,7 @@ function createEntityHandler(entityName) {
         },
 
         delete: async (id) => {
+            invalidateEntityCache(entityName);
             try {
                 const res = await fetchWithTimeout(`${API_BASE_URL}/${route}/${id}`, {
                     method: 'DELETE',

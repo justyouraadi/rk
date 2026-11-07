@@ -27,7 +27,7 @@ export default function About() {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        {[{ i: Award, v: "10+", l: "Years" }, { i: Users, v: "5,000+", l: "Clients" }, { i: Package, v: "50,000+", l: "Orders" }, { i: Clock, v: "48h", l: "Turnaround" }].map((s, i) => (
+                        {[{ i: Award, v: "10+", l: "Years" }, { i: Users, v: "12", l: "Industries" }, { i: Package, v: "4", l: "Core Categories" }, { i: Clock, v: "Express", l: "Turnaround" }].map((s, i) => (
                             <div key={i} className="rounded-2xl border border-black/8 p-6 text-center"><s.i className="h-7 w-7 mx-auto text-rk-red" /><p className="mt-3 font-heading font-extrabold text-2xl">{s.v}</p><p className="text-xs text-ink-soft">{s.l}</p></div>
                         ))}
                     </div>

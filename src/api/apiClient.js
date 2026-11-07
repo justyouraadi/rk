@@ -55,6 +55,26 @@ function getAuthHeader() {
     return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 2500) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            const res = await fetch(url, options);
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('text/html') && attempt < retries) {
+                await new Promise(r => setTimeout(r, delayMs));
+                continue;
+            }
+            return res;
+        } catch (err) {
+            if (attempt < retries && (err.name === 'TypeError' || String(err.message).toLowerCase().includes('fetch'))) {
+                await new Promise(r => setTimeout(r, delayMs));
+                continue;
+            }
+            throw err;
+        }
+    }
+}
+
 function createEntityHandler(entityName) {
     const route = ENTITY_ROUTES[entityName] || `entities/${entityName.toLowerCase()}`;
 
@@ -65,7 +85,7 @@ function createEntityHandler(entityName) {
                 if (sort) params.append('sort', sort);
                 if (limit) params.append('limit', String(limit));
 
-                const res = await fetch(`${API_BASE_URL}/${route}?${params.toString()}`, {
+                const res = await fetchWithRetry(`${API_BASE_URL}/${route}?${params.toString()}`, {
                     headers: { credentials: 'omit', ...getAuthHeader() },
                 });
                 if (res.ok) {
@@ -91,7 +111,7 @@ function createEntityHandler(entityName) {
                 if (sort) params.append('sort', sort);
                 if (limit) params.append('limit', String(limit));
 
-                const res = await fetch(`${API_BASE_URL}/${route}?${params.toString()}`, {
+                const res = await fetchWithRetry(`${API_BASE_URL}/${route}?${params.toString()}`, {
                     headers: { credentials: 'omit', ...getAuthHeader() },
                 });
                 if (res.ok) {
@@ -118,7 +138,7 @@ function createEntityHandler(entityName) {
 
         get: async (idOrSlug) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/${route}/${idOrSlug}`, {
+                const res = await fetchWithRetry(`${API_BASE_URL}/${route}/${idOrSlug}`, {
                     headers: { credentials: 'omit', ...getAuthHeader() },
                 });
                 if (res.ok) {
@@ -137,7 +157,7 @@ function createEntityHandler(entityName) {
 
         create: async (data) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/${route}`, {
+                const res = await fetchWithRetry(`${API_BASE_URL}/${route}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(data),

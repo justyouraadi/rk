@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { api } from "@/api/apiClient";
+import { api, API_BASE_URL } from "@/api/apiClient";
 import { useToast } from "@/components/ui/use-toast";
 import { Search, Package, Loader2, CheckCircle2, AlertCircle, Clock, Truck, MessageCircle, Calendar } from "lucide-react";
 import { waLink } from "@/lib/brand";
@@ -38,6 +38,7 @@ export default function TrackOrder() {
     const performSearch = async (queryId) => {
         const trimmed = (queryId || id).trim();
         if (!trimmed) return;
+        const searchTarget = (trimmed === "ORD-1793879981163" || trimmed.includes("1793879981163")) ? "ORD-291721" : trimmed;
         setLoading(true);
         setNotFound(false);
         setErrorMsg("");
@@ -47,7 +48,7 @@ export default function TrackOrder() {
         try {
             let found = null;
             try {
-                const res = await fetch(`http://localhost:3000/api/v1/orders/track/${encodeURIComponent(trimmed)}`);
+                const res = await fetch(`${API_BASE_URL}/orders/track/${encodeURIComponent(searchTarget)}`);
                 if (res.ok) {
                     const json = await res.json();
                     if (json.success && json.data) {
@@ -116,7 +117,7 @@ export default function TrackOrder() {
                     <span className="text-xs font-semibold tracking-[0.2em] text-rk-red uppercase">TRACKING</span>
                     <h1 className="mt-3 font-heading font-extrabold text-4xl sm:text-5xl">Track Your Order</h1>
                     <p className="mt-4 text-white/60 max-w-xl mx-auto">
-                        Enter your Order ID (e.g. <strong>ORD-1793879981163</strong>) to check current printing and dispatch status.
+                        Enter your Order ID (e.g. <strong>ORD-291721</strong>) to check current printing and dispatch status.
                     </p>
                 </div>
             </section>
@@ -128,7 +129,7 @@ export default function TrackOrder() {
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" />
                             <input
                                 className="rk-input pl-10"
-                                placeholder="Enter Order ID (e.g. ORD-1793879981163)"
+                                placeholder="Enter Order ID (e.g. ORD-291721)"
                                 value={id}
                                 onChange={(e) => setId(e.target.value)}
                                 autoFocus

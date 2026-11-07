@@ -50,9 +50,15 @@ export default function Offers(props) {
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {items.map((o) => {
                                 const code = o.code || o.coupon_code || "";
-                                const validText = o.valid_until
-                                    ? `Valid till ${new Date(o.valid_until).toLocaleDateString("en-IN")}`
-                                    : o.validity || "Limited time offer";
+                                let validText = o.validity || "Limited time offer";
+                                if (o.valid_until) {
+                                    const parsed = new Date(o.valid_until);
+                                    if (!isNaN(parsed.getTime()) && !/^[a-zA-Z\s]+$/.test(o.valid_until)) {
+                                        validText = `Valid till ${parsed.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`;
+                                    } else {
+                                        validText = String(o.valid_until).startsWith("Valid") ? o.valid_until : `Valid: ${o.valid_until}`;
+                                    }
+                                }
                                 const quoteUrl = `/get-quote?coupon=${encodeURIComponent(code)}&offer=${encodeURIComponent(o.title)}`;
 
                                 return (

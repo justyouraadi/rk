@@ -221,6 +221,7 @@ export const SERVICES = [
 export const PRODUCTS = [
     {
         id: "prod-1",
+        sku: "RK-PRD-CARD",
         name: "Premium Business Cards (Visiting Cards)",
         slug: "visiting-cards",
         category: "PRINTING",
@@ -229,7 +230,7 @@ export const PRODUCTS = [
         is_featured: true,
         status: "ACTIVE",
         description: "First impressions matter. RK Printers produces visiting cards on premium 350 GSM European art board with precision cut edges and exquisite matte, gloss, or velvet lamination.",
-        image_url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80",
+        image_url: "https://images.unsplash.com/photo-1589330694653-ded6df03f754?w=800&auto=format&fit=crop&q=80",
         industries: ["corporate", "healthcare", "education", "retail", "real-estate", "restaurant", "local-businesses", "wedding-personal", "ind-12"],
         options: [
             { name: "Finishing", values: ["Matte Laminated", "Glossy Laminated", "Soft Touch Velvet", "Gold Foil Stamping", "Spot UV"] },
@@ -241,6 +242,7 @@ export const PRODUCTS = [
     },
     {
         id: "prod-2",
+        sku: "RK-PRD-PAD",
         name: "Doctor & Hospital Prescription Pads",
         slug: "prescription-pads",
         category: "PRINTING",
@@ -249,7 +251,7 @@ export const PRODUCTS = [
         is_featured: true,
         status: "ACTIVE",
         description: "Standard clinic and hospital prescription pads printed on high-brightness 80-100 GSM bond paper. Glued on top or perforated with cardboard backing for effortless daily doctor prescriptions.",
-        image_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=80",
+        image_url: "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&auto=format&fit=crop&q=80",
         industries: ["healthcare", "pharmacy", "diagnostic-labs"],
         options: [
             { name: "Paper Type", values: ["80 GSM Super White Bond", "100 GSM Executive Bond", "Alabaster Paper"] },
@@ -261,6 +263,7 @@ export const PRODUCTS = [
     },
     {
         id: "prod-3",
+        sku: "RK-PRD-BILL",
         name: "GST Invoice & Bill Books (Duplicate / Triplicate)",
         slug: "bill-books",
         category: "PRINTING",
@@ -281,6 +284,7 @@ export const PRODUCTS = [
     },
     {
         id: "prod-4",
+        sku: "RK-PRD-BOX",
         name: "Custom Product Boxes & Mono Cartons",
         slug: "product-boxes",
         category: "PACKAGING",
@@ -300,6 +304,7 @@ export const PRODUCTS = [
     },
     {
         id: "prod-5",
+        sku: "RK-PRD-FLEX",
         name: "Outdoor Flex Banners & Standees",
         slug: "flex-banners-standees",
         category: "BRANDING",
@@ -318,6 +323,7 @@ export const PRODUCTS = [
     },
     {
         id: "prod-6",
+        sku: "RK-PRD-TSHIRT",
         name: "Corporate Cotton T-Shirts & Caps",
         slug: "corporate-tshirts",
         category: "PROMOTIONAL",
@@ -337,6 +343,7 @@ export const PRODUCTS = [
     },
     {
         id: "prod-7",
+        sku: "RK-PRD-STKR",
         name: "Custom Die-Cut Stickers & Product Labels",
         slug: "die-cut-stickers",
         category: "PACKAGING",
@@ -345,7 +352,7 @@ export const PRODUCTS = [
         is_featured: true,
         status: "ACTIVE",
         description: "Waterproof vinyl stickers, paper packaging stickers, barcode labels, and transparent bottle labels. Cut precisely to any custom shape with easy-peel backing.",
-        image_url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80",
+        image_url: "https://images.unsplash.com/photo-1572375992501-4b0892d50c69?w=800&auto=format&fit=crop&q=80",
         industries: ["fmcg", "retail", "pharmacy", "restaurant", "e-commerce", "wedding-personal", "ind-12"],
         options: [
             { name: "Material", values: ["Waterproof White Vinyl", "Transparent Clear Film", "Kraft Paper Sticker", "Gold Metallic Foil"] },
@@ -355,6 +362,7 @@ export const PRODUCTS = [
     },
     {
         id: "prod-8",
+        sku: "RK-PRD-IDCARD",
         name: "Student & Employee ID Cards with Lanyards",
         slug: "id-cards-lanyards",
         category: "PRINTING",
@@ -363,7 +371,7 @@ export const PRODUCTS = [
         is_featured: true,
         status: "ACTIVE",
         description: "Durable PVC ID cards with thermal re-transfer photo printing. Accompanied by customized satin lanyards printed with school or company branding.",
-        image_url: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&auto=format&fit=crop&q=80",
+        image_url: "https://images.unsplash.com/photo-1578357078586-491adf1aa5ba?w=800&auto=format&fit=crop&q=80",
         industries: ["education", "corporate", "healthcare", "government-institutions", "hotels-hospitality"],
         options: [
             { name: "Card Type", values: ["Standard CR80 PVC Card", "RFID Smart Chip Card", "Barcode Card"] },
