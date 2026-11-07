@@ -1,10 +1,13 @@
 import { INDUSTRIES, SERVICES, PRODUCTS, REVIEWS, OFFERS, PORTFOLIO_ITEMS } from '@/data/siteData';
 
+const DEFAULT_REMOTE_API = 'https://backend-b942.onvoroa.com/api/v1';
+
 // API Base URL connecting to our Express/Prisma backend
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
-    (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-        ? `${window.location.origin}/api/v1`
-        : 'http://localhost:3000/api/v1');
+export const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3000/api/v1'
+        : DEFAULT_REMOTE_API);
 
 // Fallback in-memory data store in case backend is temporarily unreachable
 const fallbackData = {
@@ -169,7 +172,7 @@ function createEntityHandler(entityName) {
                     throw new Error(msg);
                 }
             } catch (err) {
-                if (err.message && !err.message.includes('fetch')) {
+                if (['Lead', 'Quotation', 'Order', 'Payment', 'Product'].includes(entityName) || (err.message && !err.message.includes('fetch'))) {
                     throw err;
                 }
                 console.warn(`[Backend API] Create ${entityName} failed, using local store:`, err.message);
