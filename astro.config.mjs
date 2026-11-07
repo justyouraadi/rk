@@ -4,6 +4,10 @@ import tailwind from '@astrojs/tailwind';
 import path from 'path';
 
 export default defineConfig({
+  redirects: {
+    '/quote': '/get-quote',
+    '/industries/hospitality': '/industries/hotels-hospitality',
+  },
   integrations: [
     react(),
     tailwind({
@@ -11,6 +15,7 @@ export default defineConfig({
     }),
   ],
   vite: {
+    envPrefix: ['VITE_', 'PUBLIC_'],
     resolve: {
       alias: {
         '@': path.resolve('./src'),

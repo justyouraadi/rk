@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { X, Trash2, ShoppingCart, ArrowRight, MessageCircle } from "lucide-react";
 import { useEnquiry } from "@/lib/EnquiryContext";
 import { waLink } from "@/lib/brand";
@@ -55,9 +54,9 @@ export default function EnquiryCartDrawer() {
 
                 {items.length > 0 && (
                     <div className="border-t border-black/8 p-4 space-y-2">
-                        <Link to="/get-quote?from_enquiry=1" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 rounded-lg bg-rk-red text-white py-3 text-sm font-semibold hover:opacity-90">
+                        <a href="/get-quote?from_enquiry=1" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 rounded-lg bg-rk-red text-white py-3 text-sm font-semibold hover:opacity-90">
                             Request Quote for All <ArrowRight className="h-4 w-4" />
-                        </Link>
+                        </a>
                         <a href={waMessage()} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-lg border border-black/15 text-ink py-3 text-sm font-semibold hover:bg-muted">
                             <MessageCircle className="h-4 w-4" /> Send on WhatsApp
                         </a>

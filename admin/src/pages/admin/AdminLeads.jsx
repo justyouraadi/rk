@@ -13,6 +13,10 @@ export default function AdminLeads() {
     const [sel, setSel] = useState(null);
     const [loading, setLoading] = useState(true);
     const [note, setNote] = useState("");
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newLead, setNewLead] = useState({
+        name: "", phone: "", whatsapp: "", email: "", business_name: "", service: "", requirement: "", source: "PHONE"
+    });
 
     const load = async () => {
         setLoading(true);
@@ -51,10 +55,37 @@ export default function AdminLeads() {
         } catch (e) { toast({ title: "Failed", description: e.message, variant: "destructive" }); }
     };
 
+    const handleCreateLead = async (e) => {
+        e.preventDefault();
+        if (!newLead.name || !newLead.phone) {
+            toast({ title: "Name and phone are required", variant: "destructive" });
+            return;
+        }
+        try {
+            await api.entities.Lead.create({
+                lead_id: genId("LEAD"),
+                ...newLead,
+                status: "NEW",
+            });
+            toast({ title: "Lead added successfully" });
+            setShowAddModal(false);
+            setNewLead({ name: "", phone: "", whatsapp: "", email: "", business_name: "", service: "", requirement: "", source: "PHONE" });
+            load();
+        } catch (err) {
+            toast({ title: "Failed to create lead", description: err.message, variant: "destructive" });
+        }
+    };
+
     return (
         <div className="space-y-5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div><h1 className="font-heading font-extrabold text-2xl text-ink">Leads</h1><p className="text-sm text-ink-soft">{filtered.length} leads</p></div>
+                <button
+                    onClick={() => setShowAddModal(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-rk-red text-white px-4 py-2.5 text-sm font-semibold shadow-sm hover:opacity-90 transition self-start sm:self-auto"
+                >
+                    <Plus className="h-4 w-4" /> Add Lead
+                </button>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
@@ -151,6 +182,126 @@ export default function AdminLeads() {
                             </div>
                             <button onClick={() => convertToCustomer(sel)} className="w-full rounded-lg bg-rk-red text-white py-2.5 text-sm font-semibold">Convert to Customer</button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Lead Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+                    <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-black/10">
+                        <div className="flex items-center justify-between pb-3 border-b border-black/8">
+                            <h3 className="font-heading font-bold text-lg text-ink">Add New Lead</h3>
+                            <button onClick={() => setShowAddModal(false)} className="text-ink-soft hover:text-ink text-xl font-bold">&times;</button>
+                        </div>
+
+                        <form onSubmit={handleCreateLead} className="mt-4 space-y-3.5">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-ink mb-1">Full Name *</label>
+                                    <input
+                                        required
+                                        className="rk-input"
+                                        placeholder="Customer name"
+                                        value={newLead.name}
+                                        onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-ink mb-1">Phone Number *</label>
+                                    <input
+                                        required
+                                        className="rk-input"
+                                        placeholder="10-digit number"
+                                        value={newLead.phone}
+                                        onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-ink mb-1">WhatsApp (Optional)</label>
+                                    <input
+                                        className="rk-input"
+                                        placeholder="WhatsApp number"
+                                        value={newLead.whatsapp}
+                                        onChange={(e) => setNewLead({ ...newLead, whatsapp: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-ink mb-1">Email (Optional)</label>
+                                    <input
+                                        type="email"
+                                        className="rk-input"
+                                        placeholder="customer@domain.com"
+                                        value={newLead.email}
+                                        onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-ink mb-1">Business Name</label>
+                                    <input
+                                        className="rk-input"
+                                        placeholder="Company / shop name"
+                                        value={newLead.business_name}
+                                        onChange={(e) => setNewLead({ ...newLead, business_name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-ink mb-1">Lead Source</label>
+                                    <select
+                                        className="rk-input"
+                                        value={newLead.source}
+                                        onChange={(e) => setNewLead({ ...newLead, source: e.target.value })}
+                                    >
+                                        {LEAD_SOURCES.map((s) => (
+                                            <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-ink mb-1">Service / Product Interested</label>
+                                <input
+                                    className="rk-input"
+                                    placeholder="e.g. Visiting Cards, Packaging Boxes, Flex Banner"
+                                    value={newLead.service}
+                                    onChange={(e) => setNewLead({ ...newLead, service: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-ink mb-1">Requirement / Notes</label>
+                                <textarea
+                                    rows="2"
+                                    className="rk-input"
+                                    placeholder="Quantity, paper type, delivery urgency..."
+                                    value={newLead.requirement}
+                                    onChange={(e) => setNewLead({ ...newLead, requirement: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-black/8">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddModal(false)}
+                                    className="rounded-lg border border-black/15 px-4 py-2 text-xs font-semibold text-ink hover:bg-muted"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="rounded-lg bg-rk-red px-5 py-2 text-xs font-bold text-white shadow-md hover:opacity-90"
+                                >
+                                    Save Lead
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

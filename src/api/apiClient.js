@@ -1,7 +1,8 @@
 import { INDUSTRIES, SERVICES, PRODUCTS, REVIEWS, OFFERS, PORTFOLIO_ITEMS } from '@/data/siteData';
 
 // API Base URL connecting to our Express/Prisma backend
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
+export const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL ||
+    import.meta.env.VITE_API_BASE_URL ||
     (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
         ? `${window.location.origin}/api/v1`
         : 'http://localhost:3000/api/v1');
@@ -484,20 +485,35 @@ const integrations = {
             formData.append('file', file);
             formData.append('folder', folder);
 
-            const res = await fetch(`${API_BASE_URL}/uploads/single`, {
-                method: 'POST',
-                headers: { ...getAuthHeader() },
-                body: formData,
-            });
-            const json = await res.json();
-            if (res.ok && json.success) {
-                return {
-                    file_url: json.data.url,
-                    file_uri: json.data.url,
-                    ...json.data,
-                };
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 35000);
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/uploads/single`, {
+                    method: 'POST',
+                    headers: { ...getAuthHeader() },
+                    body: formData,
+                    signal: controller.signal,
+                });
+                const json = await res.json();
+                if (res.ok && json.success && json.data) {
+                    const url = json.data.url || json.data.secure_url;
+                    return {
+                        file_url: url,
+                        file_uri: url,
+                        url,
+                        ...json.data,
+                    };
+                }
+                throw new Error(json.message || (json.error && (json.error.explanation || json.error.message)) || 'Upload failed');
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    throw new Error('Upload timed out after 35 seconds. Please try again or use a smaller file.');
+                }
+                throw err;
+            } finally {
+                clearTimeout(timeoutId);
             }
-            throw new Error(json.message || 'Upload failed');
         },
 
         UploadPrivateFile: async ({ file, folder = 'rk-printers/private' }) => {
@@ -505,20 +521,35 @@ const integrations = {
             formData.append('file', file);
             formData.append('folder', folder);
 
-            const res = await fetch(`${API_BASE_URL}/uploads/single`, {
-                method: 'POST',
-                headers: { ...getAuthHeader() },
-                body: formData,
-            });
-            const json = await res.json();
-            if (res.ok && json.success) {
-                return {
-                    file_url: json.data.url,
-                    file_uri: json.data.url,
-                    ...json.data,
-                };
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 35000);
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/uploads/single`, {
+                    method: 'POST',
+                    headers: { ...getAuthHeader() },
+                    body: formData,
+                    signal: controller.signal,
+                });
+                const json = await res.json();
+                if (res.ok && json.success && json.data) {
+                    const url = json.data.url || json.data.secure_url;
+                    return {
+                        file_url: url,
+                        file_uri: url,
+                        url,
+                        ...json.data,
+                    };
+                }
+                throw new Error(json.message || (json.error && (json.error.explanation || json.error.message)) || 'Upload failed');
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    throw new Error('Upload timed out after 35 seconds. Please try again or use a smaller file.');
+                }
+                throw err;
+            } finally {
+                clearTimeout(timeoutId);
             }
-            throw new Error(json.message || 'Upload failed');
         },
     },
 };

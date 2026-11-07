@@ -108,16 +108,24 @@ class OrderService {
   async trackOrder(orderNumber) {
     try {
       if (!orderNumber) throw new AppError(["Order number is required"], StatusCodes.BAD_REQUEST);
-      const trimmed = String(orderNumber).trim();
+      const raw = String(orderNumber).trim();
+      const stripped = raw.replace(/^RK-|^rk-/i, "").trim();
+      const digits = raw.replace(/\D/g, "");
+
       const order = await prisma.order.findFirst({
         where: {
           OR: [
-            { order_number: { equals: trimmed } },
-            { id: { equals: trimmed } },
+            { order_number: { equals: raw } },
+            { order_number: { equals: stripped } },
+            { order_number: { contains: raw } },
+            { order_number: { contains: stripped } },
+            { id: { equals: raw } },
+            ...(digits.length >= 6 ? [{ order_number: { contains: digits } }] : []),
           ],
         },
       });
-      if (!order) throw new AppError(["Order not found"], StatusCodes.NOT_FOUND);
+
+      if (!order) throw new AppError([`Order "${orderNumber}" not found. Please verify your order number.`], StatusCodes.NOT_FOUND);
       return normalizeOrderOutput(order);
     } catch (error) {
       console.error("Error tracking order:", error);

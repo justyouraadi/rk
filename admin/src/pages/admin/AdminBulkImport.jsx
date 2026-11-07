@@ -9,7 +9,7 @@ import { parseSpreadsheet, slugify, exportToExcel, buildErrorReport } from "@/li
 
 const ENTITY_FIELDS = {
     PRODUCT: {
-        name: "Product", key: "sku",
+        name: "Product", plural: "Products", key: "sku",
         fields: {
             name: { label: "Product Name", required: true },
             sku: { label: "Product ID / SKU" },
@@ -32,7 +32,7 @@ const ENTITY_FIELDS = {
         },
     },
     SERVICE: {
-        name: "Service", key: null,
+        name: "Service", plural: "Services", key: null,
         fields: {
             title: { label: "Title", required: true },
             slug: { label: "Slug" },
@@ -49,7 +49,7 @@ const ENTITY_FIELDS = {
         },
     },
     INDUSTRY: {
-        name: "Industry", key: "slug",
+        name: "Industry", plural: "Industries", key: "slug",
         fields: {
             name: { label: "Name", required: true },
             slug: { label: "Slug" },
@@ -62,7 +62,7 @@ const ENTITY_FIELDS = {
         },
     },
     CATEGORY: {
-        name: "Category", key: "slug",
+        name: "Category", plural: "Categories", key: "slug",
         fields: {
             name: { label: "Name", required: true },
             slug: { label: "Slug" },
@@ -315,7 +315,7 @@ export default function AdminBulkImport() {
                         <div><label className="block text-sm font-semibold mb-2">What are you importing?</label>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 {Object.keys(ENTITY_FIELDS).map((t) => (
-                                    <button key={t} onClick={() => setEntityType(t)} className={`rounded-lg border p-3 text-sm font-semibold transition ${entityType === t ? "border-rk-red bg-rk-red/5 text-rk-red" : "border-black/10 hover:bg-muted"}`}>{ENTITY_FIELDS[t].name}s</button>
+                                    <button key={t} onClick={() => setEntityType(t)} className={`rounded-lg border p-3 text-sm font-semibold transition ${entityType === t ? "border-rk-red bg-rk-red/5 text-rk-red" : "border-black/10 hover:bg-muted"}`}>{ENTITY_FIELDS[t].plural || `${ENTITY_FIELDS[t].name}s`}</button>
                                 ))}
                             </div>
                         </div>

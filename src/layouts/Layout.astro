@@ -5,6 +5,7 @@ import PublicFooter from '../components/PublicFooter.jsx';
 import MobileStickyBar from '../components/MobileStickyBar.jsx';
 import FloatingCallButton from '../components/FloatingCallButton.jsx';
 import EnquiryCartDrawer from '../components/EnquiryCartDrawer.jsx';
+import { Toaster } from '../components/ui/toaster.jsx';
 import { EnquiryProvider } from '../lib/EnquiryContext.jsx';
 import { BRAND } from '../lib/brand';
 
@@ -41,5 +42,6 @@ const {
     <MobileStickyBar client:idle />
     <FloatingCallButton client:load />
     <EnquiryCartDrawer client:load />
+    <Toaster client:load />
   </body>
 </html>

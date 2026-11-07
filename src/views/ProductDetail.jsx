@@ -54,9 +54,9 @@ export default function ProductDetail(props) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 lg:py-14">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1.5 text-xs text-ink-soft mb-6 flex-wrap">
-                <Link to="/" className="hover:text-rk-red">Home</Link><ChevronRight className="h-3 w-3" />
-                <Link to="/services" className="hover:text-rk-red">Services</Link><ChevronRight className="h-3 w-3" />
-                {ctxIndustry && (() => { const ind = industries.find((i) => i.id === ctxIndustry); return ind ? <><Link to={`/industries/${ind.slug}`} className="hover:text-rk-red">{ind.name}</Link><ChevronRight className="h-3 w-3" /></> : null; })()}
+                <a href="/" className="hover:text-rk-red">Home</a><ChevronRight className="h-3 w-3" />
+                <a href="/products" className="hover:text-rk-red">Products</a><ChevronRight className="h-3 w-3" />
+                {ctxIndustry && (() => { const ind = industries.find((i) => i.id === ctxIndustry); return ind ? <><a href={`/industries/${ind.slug}`} className="hover:text-rk-red">{ind.name}</a><ChevronRight className="h-3 w-3" /></> : null; })()}
                 <span className="text-ink font-medium">{item.name}</span>
             </nav>
 
@@ -117,7 +117,7 @@ export default function ProductDetail(props) {
                     </div>
 
                     <div className="mt-4 flex items-center gap-4 text-xs text-ink-soft">
-                        <span className="flex items-center gap-1.5"><Upload className="h-4 w-4 text-rk-red" /> Upload your design</span>
+                        <a href={`/get-quote?product=${encodeURIComponent(item.name)}&product_id=${item.id}&step=2`} className="flex items-center gap-1.5 hover:text-rk-red font-semibold transition cursor-pointer"><Upload className="h-4 w-4 text-rk-red" /> Upload your design</a>
                         <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-rk-red" /> Custom design support</span>
                     </div>
                 </div>

@@ -15,13 +15,13 @@ export default function AdminDashboard() {
         (async () => {
             try {
                 const [leads, orders, quotations, payments, products, industries, categories] = await Promise.all([
-                    api.entities.Lead.list("-created_date", 200).catch(() => []),
-                    api.entities.Order.list("-created_date", 200).catch(() => []),
-                    api.entities.Quotation.list("-created_date", 200).catch(() => []),
-                    api.entities.Payment.list("-created_date", 200).catch(() => []),
-                    api.entities.Product.list("-created_date", 2000).catch(() => []),
-                    api.entities.Industry.list("sort_order", 500).catch(() => []),
-                    api.entities.Category.list("sort_order", 500).catch(() => []),
+                    api.entities.Lead.list("-created_date", 100).catch(() => []),
+                    api.entities.Order.list("-created_date", 100).catch(() => []),
+                    api.entities.Quotation.list("-created_date", 100).catch(() => []),
+                    api.entities.Payment.list("-created_date", 100).catch(() => []),
+                    api.entities.Product.list("-created_date", 200).catch(() => []),
+                    api.entities.Industry.list("sort_order", 100).catch(() => []),
+                    api.entities.Category.list("sort_order", 100).catch(() => []),
                 ]);
                 setData({ leads, orders, quotations, payments, products, industries, categories });
             } catch (e) { }
@@ -30,12 +30,12 @@ export default function AdminDashboard() {
     }, []);
 
     const today = new Date().toDateString();
-    const todayLeads = data.leads.filter(l => new Date(l.created_date).toDateString() === today).length;
-    const todayOrders = data.orders.filter(o => new Date(o.created_date).toDateString() === today).length;
+    const todayLeads = data.leads.filter(l => new Date(l.created_date || l.createdAt).toDateString() === today).length;
+    const todayOrders = data.orders.filter(o => new Date(o.created_date || o.createdAt).toDateString() === today).length;
     const pendingQuotes = data.quotations.filter(q => ["DRAFT", "SENT", "VIEWED"].includes(q.status)).length;
-    const productionOrders = data.orders.filter(o => ["PRINTING", "FINISHING", "QUALITY_CHECK", "DESIGN_IN_PROGRESS"].includes(o.status)).length;
-    const pendingPayments = data.orders.reduce((s, o) => s + (o.pending_amount || 0), 0);
-    const monthlyRevenue = data.payments.filter(p => p.status === "SUCCESS" && new Date(p.created_date).getMonth() === new Date().getMonth()).reduce((s, p) => s + (p.amount || 0), 0);
+    const productionOrders = data.orders.filter(o => ["PRINTING", "FINISHING", "QUALITY_CHECK", "DESIGN_IN_PROGRESS"].includes(o.status || o.order_status)).length;
+    const pendingPayments = data.orders.reduce((s, o) => s + (Number(o.pending_amount) || Math.max(0, Number(o.total_amount || 0) - Number(o.paid_amount || 0))), 0);
+    const monthlyRevenue = data.payments.filter(p => p.status === "SUCCESS" && new Date(p.created_date || p.createdAt).getMonth() === new Date().getMonth() && new Date(p.created_date || p.createdAt).getFullYear() === new Date().getFullYear()).reduce((s, p) => s + (Number(p.amount) || 0), 0);
 
     const metrics = [
         { label: "Today's Leads", value: todayLeads, icon: Users, link: "/admin/leads" },
@@ -57,14 +57,18 @@ export default function AdminDashboard() {
         { label: "Without Description", value: (data.products || []).filter(p => !p.description).length, link: "/admin/products" },
     ];
 
-    const sourceData = LEAD_SOURCES.map(s => ({ name: s.replace("_", " "), value: data.leads.filter(l => l.source === s).length })).filter(d => d.value > 0);
+    const sourceData = LEAD_SOURCES.map(s => ({
+        name: s.replace("_", " "),
+        value: data.leads.filter(l => (l.source || "WEBSITE") === s).length
+    })).filter(d => d.value > 0);
+
     const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setMonth(d.getMonth() - 5 + i); return d; });
     const salesData = months.map(d => {
-        const rev = data.payments.filter(p => p.status === "SUCCESS" && new Date(p.created_date).getMonth() === d.getMonth() && new Date(p.created_date).getFullYear() === d.getFullYear()).reduce((s, p) => s + (p.amount || 0), 0);
+        const rev = data.payments.filter(p => p.status === "SUCCESS" && new Date(p.created_date || p.createdAt || p.paid_at).getMonth() === d.getMonth() && new Date(p.created_date || p.createdAt || p.paid_at).getFullYear() === d.getFullYear()).reduce((s, p) => s + (Number(p.amount) || 0), 0);
         return { name: d.toLocaleString("en-IN", { month: "short" }), revenue: rev };
     });
-    const orderStatuses = ["NEW", "DESIGN_PENDING", "PRINTING", "READY", "DISPATCHED", "DELIVERED", "COMPLETED"];
-    const statusData = orderStatuses.map(s => ({ name: s.replace(/_/g, " "), value: data.orders.filter(o => o.status === s).length })).filter(d => d.value > 0);
+    const orderStatuses = ["PLACED", "NEW", "DESIGN_PENDING", "PRINTING", "FINISHING", "PACKING", "READY", "DISPATCHED", "DELIVERED", "COMPLETED"];
+    const statusData = orderStatuses.map(s => ({ name: s.replace(/_/g, " "), value: data.orders.filter(o => (o.status === s || o.order_status === s)).length })).filter(d => d.value > 0);
 
     return (
         <div className="space-y-6">

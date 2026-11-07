@@ -10,6 +10,8 @@ export const BRAND = {
     state: "Rajasthan",
     pincode: "303108",
     email: "rkprinters.kotputli@gmail.com",
+    instagram: "https://www.instagram.com/rkprinters_kotputli",
+    facebook: "https://www.facebook.com/rkprinterskotputli",
     heroImage: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
 };
 
@@ -20,7 +22,8 @@ export function waLink(message = "Hello RK Printers, I would like to enquire abo
 }
 
 export function telLink() {
-    return `tel:+${BRAND.phone1}`;
+    const digits = String(BRAND.phone1).replace(/\D/g, '').slice(-10);
+    return `tel:+91${digits}`;
 }
 
 export const SERVICE_CATEGORIES = [
@@ -31,7 +34,7 @@ export const SERVICE_CATEGORIES = [
 ];
 
 export const ORDER_STATUSES = [
-    "NEW", "DESIGN_PENDING", "DESIGN_IN_PROGRESS", "DESIGN_APPROVAL", "PRINTING",
+    "PLACED", "NEW", "DESIGN_PENDING", "DESIGN_IN_PROGRESS", "DESIGN_APPROVAL", "PRINTING",
     "FINISHING", "QUALITY_CHECK", "PACKING", "READY", "DISPATCHED", "DELIVERED", "COMPLETED"
 ];
 

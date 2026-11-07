@@ -230,11 +230,11 @@ export const PRODUCTS = [
         status: "ACTIVE",
         description: "First impressions matter. RK Printers produces visiting cards on premium 350 GSM European art board with precision cut edges and exquisite matte, gloss, or velvet lamination.",
         image_url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80",
-        industries: ["corporate", "healthcare", "education", "retail", "real-estate", "restaurant", "local-businesses"],
+        industries: ["corporate", "healthcare", "education", "retail", "real-estate", "restaurant", "local-businesses", "wedding-personal", "ind-12"],
         options: [
             { name: "Finishing", values: ["Matte Laminated", "Glossy Laminated", "Soft Touch Velvet", "Gold Foil Stamping", "Spot UV"] },
             { name: "Paper Weight", values: ["300 GSM Art Card", "350 GSM Heavy Board", "400 GSM Ultra Thick", "Plastic PVC Card"] },
-            { name: "Corners", values: ["Standard Sharp Corners", "Rounded Rounded (4 Corners)"] },
+            { name: "Corners", values: ["Standard Sharp Corners", "Rounded (4 Corners)"] },
             { name: "Quantity", values: ["100", "250", "500", "1000", "2500", "5000"] }
         ],
         features: ["Standard 90 x 54 mm dimension", "Double-sided full color offset printing", "Smooth velvety tactile touch", "Fade-proof inks"]
@@ -290,7 +290,7 @@ export const PRODUCTS = [
         status: "ACTIVE",
         description: "Retail-ready packaging boxes for pharmaceuticals, cosmetics, electronics, food, and gifts. Precision die-cut with window patches, embossed branding, and protective coatings.",
         image_url: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800&auto=format&fit=crop&q=80",
-        industries: ["fmcg", "pharmacy", "retail", "e-commerce", "fashion-clothing"],
+        industries: ["fmcg", "pharmacy", "retail", "e-commerce", "fashion-clothing", "wedding-personal", "ind-12"],
         options: [
             { name: "Box Style", values: ["Straight Tuck End", "Reverse Tuck End", "Crash Lock Bottom", "Two Piece Box"] },
             { name: "Material", values: ["ITC Cyber XL 350 GSM", "Bleached Duplex 300 GSM", "Kraft Board"] },
@@ -309,7 +309,7 @@ export const PRODUCTS = [
         status: "ACTIVE",
         description: "Heavy-duty outdoor flex banners, hoardings, star flex backdrops, and portable aluminium roll-up standees for promotions, shop openings, and roadshows.",
         image_url: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80",
-        industries: ["real-estate", "education", "retail", "events-exhibitions", "corporate", "restaurant"],
+        industries: ["real-estate", "education", "retail", "events-exhibitions", "corporate", "restaurant", "wedding-personal", "ind-12"],
         options: [
             { name: "Media Type", values: ["Normal Flex (240 GSM)", "Star Flex High-Def (380 GSM)", "Blackout Flex (Double sided)", "Roll-up Standee with Bag"] },
             { name: "Eyelets / Border", values: ["Metal Eyelets on Corners", "Reinforced Folded Border", "Pocket Sleeve for Rods"] }
@@ -346,7 +346,7 @@ export const PRODUCTS = [
         status: "ACTIVE",
         description: "Waterproof vinyl stickers, paper packaging stickers, barcode labels, and transparent bottle labels. Cut precisely to any custom shape with easy-peel backing.",
         image_url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80",
-        industries: ["fmcg", "retail", "pharmacy", "restaurant", "e-commerce"],
+        industries: ["fmcg", "retail", "pharmacy", "restaurant", "e-commerce", "wedding-personal", "ind-12"],
         options: [
             { name: "Material", values: ["Waterproof White Vinyl", "Transparent Clear Film", "Kraft Paper Sticker", "Gold Metallic Foil"] },
             { name: "Cut Style", values: ["Die Cut (Individual shape)", "Kiss Cut Sheet", "Continuous Roll"] }
@@ -363,7 +363,7 @@ export const PRODUCTS = [
         is_featured: true,
         status: "ACTIVE",
         description: "Durable PVC ID cards with thermal re-transfer photo printing. Accompanied by customized satin lanyards printed with school or company branding.",
-        image_url: "https://images.unsplash.com/photo-1589330694653-dad6ef49ab6e?w=800&auto=format&fit=crop&q=80",
+        image_url: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&auto=format&fit=crop&q=80",
         industries: ["education", "corporate", "healthcare", "government-institutions", "hotels-hospitality"],
         options: [
             { name: "Card Type", values: ["Standard CR80 PVC Card", "RFID Smart Chip Card", "Barcode Card"] },

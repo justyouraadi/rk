@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { ArrowRight, Check, ShoppingCart, MessageCircle } from "lucide-react";
 import { formatINR, waLink } from "@/lib/brand";
 import { useEnquiry } from "@/lib/EnquiryContext";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ProductConfigurator({ product, industryId }) {
     const [selections, setSelections] = useState({});
     const [quantity, setQuantity] = useState("");
     const { addItem } = useEnquiry();
+    const { toast } = useToast();
 
     const options = product.options || [];
     const variants = product.variants || [];
@@ -30,6 +31,29 @@ export default function ProductConfigurator({ product, industryId }) {
         if (quantity) p.set("quantity", quantity);
         return p;
     }, [selections, quantity, product, industryId]);
+
+    // Dynamic price calculation
+    const currentPrice = useMemo(() => {
+        if (product.custom_pricing || !product.starting_price) return null;
+        let base = Number(product.starting_price);
+        if (selections.Variant) {
+            const v = variants.find((x) => x.name === selections.Variant);
+            if (v && v.price) base = Number(v.price);
+        }
+        const qNum = parseInt(quantity, 10);
+        if (!isNaN(qNum) && qNum > 0) {
+            if (product.price_type === "PER_UNIT") {
+                return { total: base * qNum, perUnit: base };
+            }
+            if (Array.isArray(product.price_tiers) && product.price_tiers.length > 0) {
+                const tier = product.price_tiers.slice().reverse().find((t) => qNum >= Number(t.quantity));
+                if (tier && tier.price) {
+                    return { total: Number(tier.price) * qNum, perUnit: Number(tier.price) };
+                }
+            }
+        }
+        return { total: base, perUnit: null };
+    }, [product, selections.Variant, quantity, variants]);
 
     const hasOptions = options.length > 0 || variants.length > 0;
 
@@ -54,18 +78,33 @@ export default function ProductConfigurator({ product, industryId }) {
             finishing: selections.Finishing || "",
             quantity: quantity || "",
         });
+        toast({
+            title: "Added to Enquiry List",
+            description: `${product.name} ${quantity ? `(${quantity} pcs)` : ""} added.`,
+        });
     };
 
     if (!hasOptions && !quantityOptions.length) {
         return (
             <div className="mt-6 flex flex-wrap gap-3">
-                <Link to={`/get-quote?${quoteParams.toString()}`} className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rk-red/20 hover:opacity-90">
+                <a
+                    href={`/get-quote?${quoteParams.toString()}`}
+                    className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rk-red/20 hover:opacity-90 transition"
+                >
                     Get a Quote <ArrowRight className="h-4 w-4" />
-                </Link>
-                <button onClick={addToEnquiry} className="inline-flex items-center gap-2 rounded-lg border border-black/15 px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition">
+                </a>
+                <button
+                    onClick={addToEnquiry}
+                    className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
+                >
                     <ShoppingCart className="h-4 w-4" /> Add to Enquiry
                 </button>
-                <a href={waMessage()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-black/15 px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition">
+                <a
+                    href={waMessage()}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
+                >
                     <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
             </div>
@@ -80,8 +119,15 @@ export default function ProductConfigurator({ product, industryId }) {
                     <p className="text-sm font-semibold text-ink mb-2">Select Quality / Variant</p>
                     <div className="flex flex-wrap gap-2">
                         {variants.map((v) => (
-                            <button key={v.name} onClick={() => setOpt("Variant", v.name)}
-                                className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${selections.Variant === v.name ? "border-rk-red bg-rk-red text-white" : "border-black/10 bg-white text-ink hover:border-rk-red/50"}`}>
+                            <button
+                                key={v.name}
+                                onClick={() => setOpt("Variant", v.name)}
+                                className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                                    selections.Variant === v.name
+                                        ? "border-rk-red bg-rk-red text-white"
+                                        : "border-black/10 bg-white text-ink hover:border-rk-red/50"
+                                }`}
+                            >
                                 {v.name}
                             </button>
                         ))}
@@ -108,8 +154,15 @@ export default function ProductConfigurator({ product, industryId }) {
                     <p className="text-sm font-semibold text-ink mb-2">Select {opt.name}</p>
                     <div className="flex flex-wrap gap-2">
                         {opt.values.map((val) => (
-                            <button key={val} onClick={() => setOpt(opt.name, val)}
-                                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${selections[opt.name] === val ? "border-rk-red bg-rk-red text-white" : "border-black/10 bg-white text-ink hover:border-rk-red/50"}`}>
+                            <button
+                                key={val}
+                                onClick={() => setOpt(opt.name, val)}
+                                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
+                                    selections[opt.name] === val
+                                        ? "border-rk-red bg-rk-red text-white"
+                                        : "border-black/10 bg-white text-ink hover:border-rk-red/50"
+                                }`}
+                            >
                                 {val}
                             </button>
                         ))}
@@ -120,11 +173,20 @@ export default function ProductConfigurator({ product, industryId }) {
             {/* Quantity */}
             {quantityOptions.length > 0 && (
                 <div className="mb-5">
-                    <p className="text-sm font-semibold text-ink mb-2">Select Quantity {product.moq ? `(MOQ: ${product.moq})` : ""}</p>
+                    <p className="text-sm font-semibold text-ink mb-2">
+                        Select Quantity {product.moq ? `(MOQ: ${product.moq})` : ""}
+                    </p>
                     <div className="flex flex-wrap gap-2">
                         {quantityOptions.map((q) => (
-                            <button key={q} onClick={() => setQuantity(q)}
-                                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${quantity === q ? "border-rk-red bg-rk-red text-white" : "border-black/10 bg-white text-ink hover:border-rk-red/50"}`}>
+                            <button
+                                key={q}
+                                onClick={() => setQuantity(q)}
+                                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
+                                    quantity === q
+                                        ? "border-rk-red bg-rk-red text-white"
+                                        : "border-black/10 bg-white text-ink hover:border-rk-red/50"
+                                }`}
+                            >
                                 {q}
                             </button>
                         ))}
@@ -132,26 +194,51 @@ export default function ProductConfigurator({ product, industryId }) {
                 </div>
             )}
 
-            {/* Price + CTA */}
+            {/* Dynamic Price + CTA */}
             <div className="mt-5 pt-5 border-t border-black/8 flex items-center justify-between flex-wrap gap-3">
                 <div>
-                    {product.custom_pricing || !product.starting_price ? (
+                    {!currentPrice ? (
                         <p className="text-lg font-extrabold text-rk-red">Custom Quote</p>
+                    ) : currentPrice.perUnit ? (
+                        <div>
+                            <p className="text-xl font-extrabold text-rk-red">
+                                Est. {formatINR(currentPrice.total)}
+                            </p>
+                            <p className="text-xs text-ink-soft">
+                                ({formatINR(currentPrice.perUnit)} / pc)
+                            </p>
+                        </div>
                     ) : (
-                        <p className="text-lg font-extrabold text-rk-red">From {formatINR(product.starting_price)}</p>
+                        <p className="text-lg font-extrabold text-rk-red">
+                            From {formatINR(currentPrice.total)}
+                        </p>
                     )}
-                    {product.production_time && <p className="text-xs text-ink-soft mt-0.5">Production: {product.production_time}</p>}
+                    {product.production_time && (
+                        <p className="text-xs text-ink-soft mt-0.5">Production: {product.production_time}</p>
+                    )}
                 </div>
+
                 <div className="flex gap-2 flex-wrap">
-                    <button onClick={addToEnquiry} className="inline-flex items-center gap-2 rounded-lg border border-black/15 px-4 py-3 text-sm font-semibold text-ink hover:bg-muted transition">
+                    <button
+                        onClick={addToEnquiry}
+                        className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-4 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
+                    >
                         <ShoppingCart className="h-4 w-4" /> Add to Enquiry
                     </button>
-                    <a href={waMessage()} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-black/15 px-4 py-3 text-sm font-semibold text-ink hover:bg-muted transition">
+                    <a
+                        href={waMessage()}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-4 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
+                    >
                         <MessageCircle className="h-4 w-4" /> WhatsApp
                     </a>
-                    <Link to={`/get-quote?${quoteParams.toString()}`} className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rk-red/20 hover:opacity-90">
+                    <a
+                        href={`/get-quote?${quoteParams.toString()}`}
+                        className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rk-red/20 hover:opacity-90 transition"
+                    >
                         Get a Quote <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    </a>
                 </div>
             </div>
         </div>

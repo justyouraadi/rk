@@ -51,6 +51,28 @@ function getAuthHeader() {
     return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+        });
+        clearTimeout(timer);
+        return response;
+    } catch (error) {
+        clearTimeout(timer);
+        if (error.name === 'AbortError') {
+            throw new Error(`Request timed out after ${timeoutMs / 1000}s. Please check network connectivity.`);
+        }
+        if (error.message && error.message.toLowerCase().includes('failed to fetch')) {
+            throw new Error('Unable to connect to RK Printers API server. Please check your internet or server status.');
+        }
+        throw error;
+    }
+}
+
 function createEntityHandler(entityName) {
     const route = ENTITY_ROUTES[entityName] || `entities/${entityName.toLowerCase()}`;
 
@@ -61,9 +83,9 @@ function createEntityHandler(entityName) {
                 if (sort) params.append('sort', sort);
                 if (limit) params.append('limit', String(limit));
 
-                const res = await fetch(`${API_BASE_URL}/${route}?${params.toString()}`, {
+                const res = await fetchWithTimeout(`${API_BASE_URL}/${route}?${params.toString()}`, {
                     headers: { credentials: 'omit', ...getAuthHeader() },
-                });
+                }, 12000);
                 if (res.ok) {
                     const json = await res.json();
                     if (json.success && Array.isArray(json.data)) {
@@ -87,9 +109,9 @@ function createEntityHandler(entityName) {
                 if (sort) params.append('sort', sort);
                 if (limit) params.append('limit', String(limit));
 
-                const res = await fetch(`${API_BASE_URL}/${route}?${params.toString()}`, {
+                const res = await fetchWithTimeout(`${API_BASE_URL}/${route}?${params.toString()}`, {
                     headers: { credentials: 'omit', ...getAuthHeader() },
-                });
+                }, 12000);
                 if (res.ok) {
                     const json = await res.json();
                     if (json.success && Array.isArray(json.data)) {
@@ -114,9 +136,9 @@ function createEntityHandler(entityName) {
 
         get: async (idOrSlug) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/${route}/${idOrSlug}`, {
+                const res = await fetchWithTimeout(`${API_BASE_URL}/${route}/${idOrSlug}`, {
                     headers: { credentials: 'omit', ...getAuthHeader() },
-                });
+                }, 12000);
                 if (res.ok) {
                     const json = await res.json();
                     if (json.success && json.data) {
@@ -133,11 +155,11 @@ function createEntityHandler(entityName) {
 
         create: async (data) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/${route}`, {
+                const res = await fetchWithTimeout(`${API_BASE_URL}/${route}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(data),
-                });
+                }, 15000);
                 const json = await res.json();
                 if (res.ok && json.success && json.data) {
                     return json.data;
@@ -161,11 +183,11 @@ function createEntityHandler(entityName) {
 
         update: async (id, data) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/${route}/${id}`, {
+                const res = await fetchWithTimeout(`${API_BASE_URL}/${route}/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(data),
-                });
+                }, 15000);
                 const json = await res.json();
                 if (res.ok && json.success && json.data) {
                     return json.data;
@@ -192,10 +214,10 @@ function createEntityHandler(entityName) {
 
         delete: async (id) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/${route}/${id}`, {
+                const res = await fetchWithTimeout(`${API_BASE_URL}/${route}/${id}`, {
                     method: 'DELETE',
                     headers: { ...getAuthHeader() },
-                });
+                }, 15000);
                 if (res.ok) {
                     return { success: true, id };
                 }
@@ -319,12 +341,12 @@ const auth = {
     },
 
     loginAdmin: async (email, password) => {
-        const res = await fetch(`${API_BASE_URL}/admins/login`, {
+        const res = await fetchWithTimeout(`${API_BASE_URL}/admins/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
-        });
-        const json = await res.json();
+        }, 15000);
+        const json = await res.json().catch(() => ({}));
         if (res.ok && json.success) {
             const token = json.data.jwt;
             const admin = json.data.admin;
@@ -342,7 +364,10 @@ const auth = {
             }
             return formatted;
         }
-        const msg = json.message || (json.error && (json.error.explanation || json.error.message)) || 'Invalid email or password';
+        if (res.status === 401 || res.status === 404) {
+            throw new Error('Invalid email or password');
+        }
+        const msg = json.message || (json.error && (json.error.explanation || json.error.message)) || 'Login request failed';
         throw new Error(msg);
     },
 

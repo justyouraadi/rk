@@ -86,7 +86,7 @@ export default function AdminLayout() {
                     <div><p className="font-heading font-extrabold text-sm leading-none">{BRAND.name}</p><p className="text-[9px] tracking-widest text-rk-red font-semibold mt-0.5">ADMIN PANEL</p></div>
                     <button className="ml-auto lg:hidden" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
                 </div>
-                <nav className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-5">
+                <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5 [scrollbar-width:thin]">
                     {NAV.map((g) => (
                         <div key={g.section}>
                             <p className="px-3 mb-1.5 text-[10px] font-bold tracking-wider text-ink-soft/60 uppercase">{g.section}</p>

@@ -20,6 +20,18 @@ export default function Products(props) {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        if (typeof window !== "undefined") {
+            const urlParams = new URLSearchParams(window.location.search);
+            const catParam = urlParams.get("cat");
+            const indParam = urlParams.get("industry");
+            const qParam = urlParams.get("q");
+            if (catParam) setCat(catParam.toUpperCase());
+            if (indParam) setInd(indParam);
+            if (qParam) setQ(qParam);
+        }
+    }, []);
+
+    useEffect(() => {
         (async () => {
             try {
                 const [prods, inds] = await Promise.all([
@@ -58,21 +70,21 @@ export default function Products(props) {
             <section className="py-10 lg:py-14">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
                     {/* Filters */}
-                    <div className="flex flex-col lg:flex-row gap-3 mb-6">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" />
-                            <input className="rk-input pl-10" placeholder="Search products — e.g. Visiting Card, Banner, ID Card..." value={q} onChange={(e) => setQ(e.target.value)} />
+                    <div className="flex flex-col lg:flex-row gap-3 mb-6 items-stretch lg:items-center">
+                        <div className="relative flex-1 min-w-[280px]">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft shrink-0 pointer-events-none" />
+                            <input className="w-full h-11 pl-10 pr-4 rounded-xl border border-black/15 bg-white text-ink text-sm shadow-sm focus:border-rk-red focus:outline-none focus:ring-1 focus:ring-rk-red" placeholder="Search products — e.g. Visiting Card, Banner, ID Card..." value={q} onChange={(e) => setQ(e.target.value)} />
                         </div>
                         <div className="flex gap-3 flex-wrap">
-                            <select className="rk-input" value={cat} onChange={(e) => setCat(e.target.value)}>
+                            <select className="h-11 px-3 rounded-xl border border-black/15 bg-white text-ink text-sm shadow-sm focus:border-rk-red focus:outline-none" value={cat} onChange={(e) => setCat(e.target.value)}>
                                 <option value="ALL">All Categories</option>
                                 {SERVICE_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
                             </select>
-                            <select className="rk-input" value={ind} onChange={(e) => setInd(e.target.value)}>
+                            <select className="h-11 px-3 rounded-xl border border-black/15 bg-white text-ink text-sm shadow-sm focus:border-rk-red focus:outline-none" value={ind} onChange={(e) => setInd(e.target.value)}>
                                 <option value="ALL">All Industries</option>
                                 {industries.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
                             </select>
-                            <select className="rk-input" value={sort} onChange={(e) => setSort(e.target.value)}>
+                            <select className="h-11 px-3 rounded-xl border border-black/15 bg-white text-ink text-sm shadow-sm focus:border-rk-red focus:outline-none" value={sort} onChange={(e) => setSort(e.target.value)}>
                                 <option value="created">Newest</option>
                                 <option value="name">Name A–Z</option>
                                 <option value="price-low">Price: Low to High</option>

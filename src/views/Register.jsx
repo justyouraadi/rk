@@ -4,11 +4,13 @@ import { api } from "@/api/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { UserPlus, User, Phone, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Register() {
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,9 +24,18 @@ export default function Register() {
             setError("Passwords do not match");
             return;
         }
+        if (password.length < 6) {
+            setError("Password must be at least 6 characters");
+            return;
+        }
         setLoading(true);
         try {
-            await api.auth.register({ email, password });
+            await api.auth.register({
+                name: name.trim(),
+                phone: phone.trim(),
+                email: email.trim(),
+                password,
+            });
             window.location.href = safeReturnTo();
         } catch (err) {
             setError(err.message || "Registration failed");
@@ -37,7 +48,7 @@ export default function Register() {
         <AuthLayout
             icon={UserPlus}
             title="Create your account"
-            subtitle="Sign up to get started"
+            subtitle="Register with RK Printers to track orders and request instant quotes"
             footer={
                 <>
                     Already have an account?{" "}
@@ -58,14 +69,48 @@ export default function Register() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="name">Full Name</Label>
+                    <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        <Input
+                            id="name"
+                            type="text"
+                            autoComplete="name"
+                            autoFocus
+                            placeholder="Your full name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="pl-10 h-12"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        <Input
+                            id="phone"
+                            type="tel"
+                            autoComplete="tel"
+                            placeholder="10-digit mobile number"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="pl-10 h-12"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
                     <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
                         <Input
                             id="email"
                             type="email"
                             autoComplete="email"
-                            autoFocus
                             placeholder="you@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -74,6 +119,7 @@ export default function Register() {
                         />
                     </div>
                 </div>
+
                 <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
                     <div className="relative">
@@ -90,6 +136,7 @@ export default function Register() {
                         />
                     </div>
                 </div>
+
                 <div className="space-y-2">
                     <Label htmlFor="confirm">Confirm Password</Label>
                     <div className="relative">
@@ -106,7 +153,12 @@ export default function Register() {
                         />
                     </div>
                 </div>
-                <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+
+                <Button
+                    type="submit"
+                    className="w-full h-12 font-semibold text-base mt-2"
+                    disabled={loading}
+                >
                     {loading ? (
                         <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

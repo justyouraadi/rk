@@ -29,6 +29,7 @@ import AdminMediaLibrary from '@/pages/admin/AdminMediaLibrary';
 import AdminImportHistory from '@/pages/admin/AdminImportHistory';
 import AdminInventory from '@/pages/admin/AdminInventory';
 import AdminPayments from '@/pages/admin/AdminPayments';
+import AdminDelivery from '@/pages/admin/AdminDelivery';
 import AdminPortfolio from '@/pages/admin/AdminPortfolio';
 import AdminReviews from '@/pages/admin/AdminReviews';
 import AdminOffers from '@/pages/admin/AdminOffers';
@@ -65,7 +66,7 @@ export default function App() {
                             <Route path="import-history" element={<AdminImportHistory />} />
                             <Route path="inventory" element={<AdminInventory />} />
                             <Route path="payments" element={<AdminPayments />} />
-                            <Route path="delivery" element={<AdminOrders />} />
+                            <Route path="delivery" element={<AdminDelivery />} />
                             <Route path="portfolio" element={<AdminPortfolio />} />
                             <Route path="reviews" element={<AdminReviews />} />
                             <Route path="offers" element={<AdminOffers />} />

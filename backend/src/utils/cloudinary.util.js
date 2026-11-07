@@ -13,6 +13,31 @@ export const uploadBufferToCloudinary = (buffer, options = {}) => {
       return reject(new AppError(["No buffer provided for upload"], StatusCodes.BAD_REQUEST));
     }
 
+    let settled = false;
+    const timeoutDuration = options.timeout || 25000;
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        reject(new AppError(["Cloudinary upload timed out after " + Math.round(timeoutDuration / 1000) + "s"], StatusCodes.GATEWAY_TIMEOUT));
+      }
+    }, timeoutDuration);
+
+    const safeReject = (err) => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        reject(err);
+      }
+    };
+
+    const safeResolve = (res) => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        resolve(res);
+      }
+    };
+
     const uploadOptions = {
       folder: options.folder || "rk-printers/uploads",
       resource_type: options.resource_type || "auto",
@@ -26,7 +51,7 @@ export const uploadBufferToCloudinary = (buffer, options = {}) => {
       (error, result) => {
         if (error) {
           console.error("Cloudinary upload_stream error:", error);
-          return reject(
+          return safeReject(
             new AppError(
               [error.message || "Failed to upload file to Cloudinary"],
               StatusCodes.INTERNAL_SERVER_ERROR
@@ -34,7 +59,7 @@ export const uploadBufferToCloudinary = (buffer, options = {}) => {
           );
         }
 
-        resolve({
+        safeResolve({
           url: result.secure_url || result.url,
           public_id: result.public_id,
           format: result.format,
@@ -48,6 +73,16 @@ export const uploadBufferToCloudinary = (buffer, options = {}) => {
         });
       }
     );
+
+    uploadStream.on("error", (err) => {
+      console.error("Cloudinary stream error event:", err);
+      safeReject(
+        new AppError(
+          [err.message || "Cloudinary stream connection error"],
+          StatusCodes.INTERNAL_SERVER_ERROR
+        )
+      );
+    });
 
     Readable.from(buffer).pipe(uploadStream);
   });

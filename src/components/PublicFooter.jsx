@@ -1,15 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { MapPin, Phone, Mail, Instagram, Facebook } from "lucide-react";
-import { BRAND, waLink } from "@/lib/brand";
+import { BRAND, waLink, telLink } from "@/lib/brand";
 
 export default function PublicFooter() {
     return (
         <footer className="bg-ink text-white">
             <div className="cmyk-bar h-1 w-full" />
             <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
-                <div className="grid gap-10 md:grid-cols-4">
-                    <div>
+                <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                    <div className="sm:col-span-2 lg:col-span-1">
                         <div className="flex items-center gap-2.5 mb-4">
                             <span className="grid h-9 w-9 place-items-center rounded-lg bg-rk-red text-white font-heading font-extrabold text-sm">RK</span>
                             <span>
@@ -19,8 +19,8 @@ export default function PublicFooter() {
                         </div>
                         <p className="text-sm text-white/60 leading-relaxed">{BRAND.positioning}. Complete printing, branding, packaging & promotional solutions under one roof.</p>
                         <div className="flex gap-2 mt-4">
-                            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-md bg-white/10 hover:bg-rk-red transition"><Instagram className="h-4 w-4" /></a>
-                            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-md bg-white/10 hover:bg-rk-red transition"><Facebook className="h-4 w-4" /></a>
+                            <a href={BRAND.instagram || "https://instagram.com"} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-md bg-white/10 hover:bg-rk-red transition" aria-label="Instagram"><Instagram className="h-4 w-4" /></a>
+                            <a href={BRAND.facebook || "https://facebook.com"} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-md bg-white/10 hover:bg-rk-red transition" aria-label="Facebook"><Facebook className="h-4 w-4" /></a>
                         </div>
                     </div>
 
@@ -61,7 +61,7 @@ export default function PublicFooter() {
                         <h4 className="font-heading font-bold text-sm mb-4">Contact</h4>
                         <ul className="space-y-3 text-sm text-white/60">
                             <li className="flex gap-2.5"><MapPin className="h-4 w-4 mt-0.5 shrink-0 text-rk-red" /><span>{BRAND.address}</span></li>
-                            <li className="flex gap-2.5"><Phone className="h-4 w-4 mt-0.5 shrink-0 text-rk-red" /><span>{BRAND.phone1}<br />{BRAND.phone2}</span></li>
+                            <li className="flex gap-2.5"><Phone className="h-4 w-4 mt-0.5 shrink-0 text-rk-red" /><span><a href={telLink()} className="hover:text-white transition">{BRAND.phone1}</a><br /><a href={`tel:+91${BRAND.phone2}`} className="hover:text-white transition">{BRAND.phone2}</a></span></li>
                             <li className="flex gap-2.5"><Mail className="h-4 w-4 mt-0.5 shrink-0 text-rk-red" /><span>{BRAND.email}</span></li>
                         </ul>
                         <a href={waLink()} target="_blank" rel="noreferrer" className="inline-flex mt-4 rounded-md bg-white/10 hover:bg-rk-red px-4 py-2 text-sm font-semibold transition">WhatsApp Us</a>
@@ -69,7 +69,7 @@ export default function PublicFooter() {
                 </div>
 
                 <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-3 text-xs text-white/50">
-                    <p>© {new Date().getFullYear()} {BRAND.name}. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()}&nbsp;{BRAND.name}. All rights reserved.</p>
                     <div className="flex gap-4">
                         <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
                         <Link to="/terms" className="hover:text-white">Terms & Conditions</Link>
