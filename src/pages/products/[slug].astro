@@ -1,10 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import ProductDetail from '../../views/ProductDetail.jsx';
-import { PRODUCTS, INDUSTRIES } from '../../data/siteData';
+import allProducts from '../../data/allProducts.json';
 
 export function getStaticPaths() {
-  return PRODUCTS.map((product) => ({
+  return allProducts.map((product) => ({
     params: { slug: product.slug },
     props: { product }
   }));
@@ -15,8 +15,8 @@ const { product } = Astro.props;
 
 <Layout
   title={`${product.name} | RK Printers`}
-  description={product.description}
+  description={product.short_description || product.description}
 >
-  <ProductDetail client:load product={product} slug={product.slug} industries={INDUSTRIES} />
+  <ProductDetail client:load slug={product.slug} />
 </Layout>
 

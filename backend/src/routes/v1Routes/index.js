@@ -17,7 +17,7 @@ import notificationRoutes from "./notification.routes.js";
 import importJobRoutes from "./import-job.routes.js";
 import offerRoutes from "./offer.routes.js";
 import portfolioRoutes from "./portfolio.routes.js";
-import genericEntityRoutes from "./entity.routes.js";
+import genericEntityRoutes, { createCrudRouter } from "./entity.routes.js";
 
 const router = express.Router();
 
@@ -49,6 +49,7 @@ router.use("/importjobs", importJobRoutes);
 router.use("/offers", offerRoutes);
 router.use("/portfolio", portfolioRoutes);
 router.use("/portfolio-items", portfolioRoutes);
+router.use("/inventory", createCrudRouter("inventoryItem"));
 
 // Dynamic Entity Fallback (/api/v1/entities/:entity)
 router.use("/entities", genericEntityRoutes);

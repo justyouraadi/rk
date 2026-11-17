@@ -10,17 +10,17 @@ import { Image as Img } from "@/components/ui/image";
 import SolutionBundles from "@/components/SolutionBundles";
 import CustomRequestCTA from "@/components/CustomRequestCTA";
 import ProductCard from "@/components/ProductCard";
-import { SERVICES, PRODUCTS, REVIEWS, OFFERS, PORTFOLIO_ITEMS, INDUSTRIES } from "@/data/siteData";
 
 const ICONS = { Printer, Palette, Package, Sparkles };
 
 export default function Home(props) {
-    const [services, setServices] = useState(props.initialServices || SERVICES);
-    const [products, setProducts] = useState(props.initialProducts || PRODUCTS);
-    const [reviews, setReviews] = useState(props.initialReviews || REVIEWS);
-    const [offers, setOffers] = useState(props.initialOffers || OFFERS);
-    const [portfolio, setPortfolio] = useState(props.initialPortfolio || PORTFOLIO_ITEMS);
-    const [industries, setIndustries] = useState(props.initialIndustries || INDUSTRIES);
+    const [services, setServices] = useState(props.initialServices || []);
+    const [products, setProducts] = useState(props.initialProducts || []);
+    const [reviews, setReviews] = useState(props.initialReviews || []);
+    const [offers, setOffers] = useState(props.initialOffers || []);
+    const [portfolio, setPortfolio] = useState(props.initialPortfolio || []);
+    const [industries, setIndustries] = useState(props.initialIndustries || []);
+    const [loading, setLoading] = useState(!props.initialProducts || props.initialProducts.length === 0);
 
     useEffect(() => {
         (async () => {
@@ -40,12 +40,15 @@ export default function Home(props) {
                 if (po?.length) setPortfolio(po);
                 if (ind?.length) setIndustries(ind);
             } catch (e) { /* ignore */ }
+            finally {
+                setLoading(false);
+            }
         })();
     }, []);
 
     const stats = [
         { icon: Award, value: "10+", label: "Years Experience" },
-        { icon: Users, value: "12", label: "Industry Sectors" },
+        { icon: Users, value: industries.length > 0 ? String(industries.length) : "12+", label: "Industry Sectors" },
         { icon: Package, value: "4", label: "Core Categories" },
         { icon: Clock, value: "Fast", label: "Turnaround" },
     ];
@@ -130,7 +133,7 @@ export default function Home(props) {
                         { k: "BRANDING", i: Palette, t: "Branding", d: "Corporate identity, signage, retail & event branding solutions." },
                         { k: "PACKAGING", i: Package, t: "Packaging", d: "Product boxes, labels, stickers, shopping bags & thank-you cards." },
                         { k: "PROMOTIONAL", i: Sparkles, t: "Promotional", d: "Printed t-shirts, caps, flags, gifts & event materials." }].map((s) => (
-                            <Link key={s.k} to={`/services?cat=${s.k}`} className="group rounded-2xl border border-black/8 bg-white p-7 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                            <Link key={s.k} to={`/products?cat=${s.k}`} className="group rounded-2xl border border-black/8 bg-white p-7 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-ink text-white group-hover:bg-rk-red transition-colors">
                                     <s.i className="h-6 w-6" />
                                 </div>
@@ -141,7 +144,17 @@ export default function Home(props) {
                         ))}
                     </div>
 
-                    {services.length > 0 && (
+                    {loading ? (
+                        <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="rounded-xl border border-black/8 p-5 space-y-2.5 animate-pulse bg-white">
+                                    <div className="h-2.5 w-16 bg-muted rounded" />
+                                    <div className="h-5 w-3/4 bg-muted rounded" />
+                                    <div className="h-3 w-full bg-muted rounded" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : services.length > 0 ? (
                         <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {services.slice(0, 8).map((s) => (
                                 <Link key={s.id} to={`/services/${s.slug || s.id}`} className="rounded-xl border border-black/8 p-5 hover:border-rk-red/40 hover:shadow-md transition">
@@ -152,12 +165,12 @@ export default function Home(props) {
                                 </Link>
                             ))}
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </section>
 
             {/* WHAT ARE YOU LOOKING TO PRINT? */}
-            {industries.length > 0 && (
+            {(loading || industries.length > 0) && (
                 <section className="py-16 lg:py-24">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6">
                         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -165,18 +178,30 @@ export default function Home(props) {
                             <h2 className="mt-3 font-heading font-extrabold text-3xl sm:text-4xl text-ink">What Are You Looking to Print?</h2>
                             <p className="mt-4 text-ink-soft">Choose your industry and discover printing, branding and promotional solutions designed for your business.</p>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                            {industries.map((ind) => (
-                                <Link key={ind.id} to={`/industries/${ind.slug || ind.id}`} className="group rounded-2xl border border-black/8 bg-white p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col">
-                                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-ink text-white group-hover:bg-rk-red transition-colors">
-                                        <Factory className="h-5 w-5" />
+                        {loading ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                                {Array.from({ length: 8 }).map((_, i) => (
+                                    <div key={i} className="rounded-2xl border border-black/8 bg-white p-5 space-y-3 animate-pulse">
+                                        <div className="h-10 w-10 rounded-lg bg-muted" />
+                                        <div className="h-4 w-3/4 bg-muted rounded" />
+                                        <div className="h-3 w-full bg-muted rounded" />
                                     </div>
-                                    <h3 className="mt-4 font-heading font-bold text-sm text-ink leading-tight">{ind.name}</h3>
-                                    {ind.short_description && <p className="mt-1 text-xs text-ink-soft line-clamp-2 flex-1">{ind.short_description}</p>}
-                                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-rk-red">Explore Solutions <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition" /></span>
-                                </Link>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                                {industries.map((ind) => (
+                                    <Link key={ind.id} to={`/industries/${ind.slug || ind.id}`} className="group rounded-2xl border border-black/8 bg-white p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col">
+                                        <div className="grid h-10 w-10 place-items-center rounded-lg bg-ink text-white group-hover:bg-rk-red transition-colors">
+                                            <Factory className="h-5 w-5" />
+                                        </div>
+                                        <h3 className="mt-4 font-heading font-bold text-sm text-ink leading-tight">{ind.name}</h3>
+                                        {ind.short_description && <p className="mt-1 text-xs text-ink-soft line-clamp-2 flex-1">{ind.short_description}</p>}
+                                        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-rk-red">Explore Solutions <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition" /></span>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
                         <div className="text-center mt-8"><Link to="/industries" className="inline-flex items-center gap-1.5 text-sm font-semibold text-rk-red">View All Industries <ArrowRight className="h-4 w-4" /></Link></div>
                     </div>
                 </section>
@@ -199,7 +224,7 @@ export default function Home(props) {
             </section>
 
             {/* FEATURED PRODUCTS */}
-            {products.length > 0 && (
+            {(loading || products.length > 0) && (
                 <section className="py-16 lg:py-24">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6">
                         <div className="flex items-end justify-between mb-10">
@@ -209,59 +234,103 @@ export default function Home(props) {
                             </div>
                             <Link to="/products" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-rk-red">View all <ArrowRight className="h-4 w-4" /></Link>
                         </div>
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                            {products.map((p) => (
-                                <ProductCard key={p.id} product={p} />
-                            ))}
-                        </div>
+                        {loading ? (
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <div key={i} className="rounded-2xl border border-black/8 bg-white p-3.5 space-y-3 animate-pulse">
+                                        <div className="aspect-[4/3] rounded-xl bg-muted" />
+                                        <div className="h-4 w-3/4 bg-muted rounded" />
+                                        <div className="h-4 w-1/2 bg-muted rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                                {products.map((p) => (
+                                    <ProductCard key={p.id} product={p} />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </section>
             )}
 
             {/* PORTFOLIO PREVIEW */}
-            {portfolio.length > 0 && (
+            {(loading || portfolio.length > 0) && (
                 <section className="py-16 lg:py-24 bg-muted/40">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                        <div className="text-center max-w-2xl mx-auto mb-12">
-                            <span className="text-xs font-semibold tracking-[0.2em] text-rk-red">OUR WORK</span>
-                            <h2 className="mt-3 font-heading font-extrabold text-3xl sm:text-4xl text-ink">Recent Projects</h2>
+                        <div className="flex items-end justify-between mb-10">
+                            <div>
+                                <span className="text-xs font-semibold tracking-[0.2em] text-rk-red">OUR WORK</span>
+                                <h2 className="mt-3 font-heading font-extrabold text-3xl sm:text-4xl text-ink">Recent Projects</h2>
+                            </div>
+                            <Link to="/portfolio" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-rk-red">View all <ArrowRight className="h-4 w-4" /></Link>
                         </div>
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {portfolio.map((p) => (
-                                <div key={p.id} className="group relative rounded-2xl overflow-hidden aspect-[4/3]">
-                                    <Img src={p.image_url} alt={p.title} className="w-full h-full" fittingType="fill" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-5">
-                                        <div className="text-white">
-                                            <span className="text-[10px] font-semibold tracking-wider text-rk-red">{p.category}</span>
-                                            <p className="font-heading font-bold">{p.title}</p>
+                        {loading ? (
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <div key={i} className="rounded-2xl bg-muted aspect-[4/3] animate-pulse" />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {portfolio.map((p) => (
+                                    <div key={p.id} className="group relative rounded-2xl overflow-hidden aspect-[4/3]">
+                                        <Img src={p.image_url} alt={p.title} className="w-full h-full" fittingType="fill" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-5">
+                                            <div className="text-white">
+                                                <span className="text-[10px] font-semibold tracking-wider text-rk-red">{p.category}</span>
+                                                <p className="font-heading font-bold">{p.title}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </section>
             )}
 
             {/* OFFERS */}
-            {offers.length > 0 && (
+            {(loading || offers.length > 0) && (
                 <section className="py-16 lg:py-24">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                        <div className="text-center max-w-2xl mx-auto mb-10">
-                            <span className="text-xs font-semibold tracking-[0.2em] text-rk-red">LIMITED TIME</span>
-                            <h2 className="mt-3 font-heading font-extrabold text-3xl sm:text-4xl text-ink">Special Offers</h2>
+                        <div className="flex items-end justify-between mb-10">
+                            <div>
+                                <span className="text-xs font-semibold tracking-[0.2em] text-rk-red">LIMITED TIME</span>
+                                <h2 className="mt-3 font-heading font-extrabold text-3xl sm:text-4xl text-ink">Special Offers</h2>
+                            </div>
+                            <Link to="/offers" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-rk-red">View all <ArrowRight className="h-4 w-4" /></Link>
                         </div>
-                        <div className="grid md:grid-cols-3 gap-5">
-                            {offers.map((o) => (
-                                <div key={o.id} className="rounded-2xl border border-black/8 p-7 hover:shadow-lg transition">
-                                    {o.discount && <span className="inline-block rounded-full bg-rk-red text-white px-3 py-1 text-xs font-bold">{o.discount}</span>}
-                                    <h3 className="mt-3 font-heading font-bold text-xl text-ink">{o.title}</h3>
-                                    <p className="mt-2 text-sm text-ink-soft">{o.description}</p>
-                                    {o.starting_price ? <p className="mt-3 text-lg font-extrabold text-rk-red">From {formatINR(o.starting_price)}</p> : null}
-                                    <Link to="/get-quote" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-rk-red">{o.cta_text || "Get a Quote"} <ArrowRight className="h-3.5 w-3.5" /></Link>
-                                </div>
-                            ))}
-                        </div>
+                        {loading ? (
+                            <div className="grid md:grid-cols-3 gap-5">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="rounded-2xl border border-black/8 p-7 space-y-3 animate-pulse bg-white">
+                                        <div className="h-6 w-20 bg-muted rounded-full" />
+                                        <div className="h-6 w-3/4 bg-muted rounded" />
+                                        <div className="h-4 w-full bg-muted rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid md:grid-cols-3 gap-5">
+                                {offers.map((o) => {
+                                    const code = o.code || o.coupon_code;
+                                    const quoteUrl = o.cta_link || `/get-quote?coupon=${encodeURIComponent(code || "")}&offer=${encodeURIComponent(o.title || "")}`;
+                                    return (
+                                        <div key={o.id} className="rounded-2xl border border-black/8 p-7 hover:shadow-lg transition flex flex-col justify-between">
+                                            <div>
+                                                {o.discount && <span className="inline-block rounded-full bg-rk-red text-white px-3 py-1 text-xs font-bold">{o.discount}</span>}
+                                                <h3 className="mt-3 font-heading font-bold text-xl text-ink">{o.title}</h3>
+                                                <p className="mt-2 text-sm text-ink-soft">{o.description}</p>
+                                                {o.starting_price ? <p className="mt-3 text-lg font-extrabold text-rk-red">From {formatINR(o.starting_price)}</p> : null}
+                                            </div>
+                                            <Link to={quoteUrl} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-rk-red">{o.cta_text || "Get a Quote"} <ArrowRight className="h-3.5 w-3.5" /></Link>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </section>
             )}
@@ -289,25 +358,37 @@ export default function Home(props) {
             </section>
 
             {/* TESTIMONIALS */}
-            {reviews.length > 0 && (
+            {(loading || reviews.length > 0) && (
                 <section className="py-16 lg:py-24">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6">
                         <div className="text-center max-w-2xl mx-auto mb-12">
                             <span className="text-xs font-semibold tracking-[0.2em] text-rk-red">TESTIMONIALS</span>
                             <h2 className="mt-3 font-heading font-extrabold text-3xl sm:text-4xl text-ink">What Our Clients Say</h2>
                         </div>
-                        <div className="grid md:grid-cols-3 gap-5">
-                            {reviews.map((r) => (
-                                <div key={r.id} className="rounded-2xl border border-black/8 p-6">
-                                    <div className="flex gap-0.5">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`h-4 w-4 ${i < (r.rating || 5) ? "fill-rk-red text-rk-red" : "text-black/15"}`} />)}</div>
-                                    <p className="mt-4 text-sm text-ink-soft leading-relaxed">"{r.comment || r.review}"</p>
-                                    <div className="mt-5 flex items-center gap-3">
-                                        <span className="grid h-10 w-10 place-items-center rounded-full bg-ink text-white font-bold text-sm">{r.name?.[0]}</span>
-                                        <div><p className="font-semibold text-sm text-ink">{r.name}</p>{(r.company || r.business) && <p className="text-xs text-ink-soft">{r.company || r.business}</p>}</div>
+                        {loading ? (
+                            <div className="grid md:grid-cols-3 gap-5">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="rounded-2xl border border-black/8 p-6 space-y-3 animate-pulse bg-white">
+                                        <div className="h-4 w-24 bg-muted rounded" />
+                                        <div className="h-16 w-full bg-muted rounded" />
+                                        <div className="h-10 w-32 bg-muted rounded" />
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid md:grid-cols-3 gap-5">
+                                {reviews.map((r) => (
+                                    <div key={r.id} className="rounded-2xl border border-black/8 p-6">
+                                        <div className="flex gap-0.5">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`h-4 w-4 ${i < (r.rating || 5) ? "fill-rk-red text-rk-red" : "text-black/15"}`} />)}</div>
+                                        <p className="mt-4 text-sm text-ink-soft leading-relaxed">"{r.comment || r.review}"</p>
+                                        <div className="mt-5 flex items-center gap-3">
+                                            <span className="grid h-10 w-10 place-items-center rounded-full bg-ink text-white font-bold text-sm">{r.name?.[0]}</span>
+                                            <div><p className="font-semibold text-sm text-ink">{r.name}</p>{(r.company || r.business) && <p className="text-xs text-ink-soft">{r.company || r.business}</p>}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </section>
             )}

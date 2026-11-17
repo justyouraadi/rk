@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Offers from '../views/Offers.jsx';
-import { OFFERS } from '../data/siteData';
 import { BRAND } from '../lib/brand';
 ---
 
@@ -9,6 +8,6 @@ import { BRAND } from '../lib/brand';
   title={`Special Offers & Discounts | ${BRAND.name}`}
   description="Exclusive deals and discounts on business cards, brochures, standees, and annual hospital stationery packages."
 >
-  <Offers client:load initialOffers={OFFERS} />
+  <Offers client:load />
 </Layout>
 

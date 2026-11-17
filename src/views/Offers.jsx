@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { api } from "@/api/apiClient";
 import { ArrowRight, Tag, Copy, Check, Calendar, Sparkles } from "lucide-react";
 import { formatINR } from "@/lib/brand";
-import { OFFERS } from "@/data/siteData";
 
 export default function Offers(props) {
-    const [items, setItems] = useState(props.initialOffers || OFFERS);
-    const [loading, setLoading] = useState(false);
+    const [items, setItems] = useState(props.initialOffers || []);
+    const [loading, setLoading] = useState(!props.initialOffers || props.initialOffers.length === 0);
     const [copiedCode, setCopiedCode] = useState(null);
 
     useEffect(() => {
@@ -15,7 +14,9 @@ export default function Offers(props) {
                 const res = await api.entities.Offer.filter({ is_active: true }, "-created_date", 50);
                 if (res?.length) setItems(res);
             } catch (e) { }
-            setLoading(false);
+            finally {
+                setLoading(false);
+            }
         })();
     }, []);
 
@@ -43,7 +44,20 @@ export default function Offers(props) {
             <section className="py-12 lg:py-16">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
                     {loading ? (
-                        <p className="text-center text-ink-soft py-12">Loading offers...</p>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="rounded-2xl border border-black/8 bg-white p-7 space-y-4 animate-pulse">
+                                    <div className="h-6 w-24 bg-muted rounded-full" />
+                                    <div className="h-6 w-3/4 bg-muted rounded" />
+                                    <div className="h-4 w-full bg-muted rounded" />
+                                    <div className="h-4 w-2/3 bg-muted rounded" />
+                                    <div className="pt-3 border-t border-black/5 flex justify-between items-center">
+                                        <div className="h-6 w-20 bg-muted rounded" />
+                                        <div className="h-8 w-28 bg-muted rounded-lg" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : items.length === 0 ? (
                         <p className="text-center text-ink-soft py-12">No active offers right now. Check back soon!</p>
                     ) : (

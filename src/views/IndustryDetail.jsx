@@ -5,19 +5,15 @@ import { ArrowRight, MessageCircle, Factory, ArrowLeft, Search, Phone, HelpCircl
 import { waLink, formatINR, telLink } from "@/lib/brand";
 import { Image as Img } from "@/components/ui/image";
 import ProductCard from "@/components/ProductCard";
-import { INDUSTRIES, PRODUCTS } from "@/data/siteData";
 
 export default function IndustryDetail(props) {
     const routeParams = useParams();
     const slug = props.slug || routeParams?.slug;
-    const initialInd = props.industry || INDUSTRIES.find((i) => i.slug === slug || i.id === slug) || null;
-    const initialProducts = initialInd
-        ? PRODUCTS.filter((p) => (p.industries || []).includes(initialInd.slug) || (p.industries || []).includes(initialInd.id))
-        : [];
+    const initialInd = props.industry || null;
     const [industry, setIndustry] = useState(initialInd);
-    const [products, setProducts] = useState(initialProducts);
+    const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [q, setQ] = useState("");
     const [activeCat, setActiveCat] = useState("ALL");
 
@@ -37,8 +33,11 @@ export default function IndustryDetail(props) {
                     const masterCats = cats.filter((c) => !c.industry_id && c.status === "ACTIVE");
                     setCategories(masterCats.filter((mc) => industryProducts.some((p) => (p.category_ids || []).includes(mc.id))));
                 }
-            } catch (e) { }
-            setLoading(false);
+            } catch (e) {
+                console.error("Failed to load industry details:", e);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, [slug]);
 
@@ -47,7 +46,20 @@ export default function IndustryDetail(props) {
         (!q || (p.name + " " + (p.description || "")).toLowerCase().includes(q.toLowerCase()))
     );
 
-    if (loading) return <div className="py-24 text-center text-ink-soft">Loading...</div>;
+    if (loading && !industry) {
+        return (
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14 lg:py-20 animate-pulse space-y-6">
+                <div className="h-6 w-32 bg-muted rounded" />
+                <div className="h-10 w-2/3 bg-muted rounded" />
+                <div className="h-4 w-1/2 bg-muted rounded" />
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-8">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="aspect-[4/3] rounded-2xl bg-muted" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
     if (!industry) return <div className="py-24 text-center"><p className="text-ink-soft">Industry not found.</p><Link to="/services" className="mt-4 inline-block text-rk-red font-semibold">← Back to services</Link></div>;
 
     return (
@@ -87,11 +99,28 @@ export default function IndustryDetail(props) {
             <section className="py-12 lg:py-16">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
                     <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                        <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" /><input className="rk-input pl-10" placeholder={`Search ${industry.name} products...`} value={q} onChange={(e) => setQ(e.target.value)} /></div>
-                        <div className="text-sm text-ink-soft sm:py-2.5 sm:px-2">{filtered.length} of {products.length} products</div>
+                        <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-soft pointer-events-none" /><input className="rk-input pl-10" placeholder={`Search ${industry?.name || "industry"} products...`} value={q} onChange={(e) => setQ(e.target.value)} /></div>
+                        <div className="text-sm text-ink-soft sm:py-2.5 sm:px-2">{loading ? "Loading products..." : `${filtered.length} of ${products.length} products`}</div>
                     </div>
 
-                    {filtered.length === 0 ? (
+                    {loading ? (
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="rounded-2xl border border-black/8 bg-white p-3.5 space-y-3 animate-pulse">
+                                    <div className="aspect-[4/3] rounded-xl bg-muted" />
+                                    <div className="space-y-2">
+                                        <div className="h-3 w-16 bg-muted rounded" />
+                                        <div className="h-4 w-3/4 bg-muted rounded" />
+                                        <div className="h-3 w-1/2 bg-muted rounded" />
+                                    </div>
+                                    <div className="flex justify-between items-center pt-2 border-t border-black/5">
+                                        <div className="h-4 w-20 bg-muted rounded" />
+                                        <div className="h-7 w-20 bg-muted rounded-lg" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : filtered.length === 0 ? (
                         <div className="text-center py-16">
                             <p className="text-ink-soft">No products listed for {industry.name} yet.</p>
                             <Link to={`/get-quote?industry=${industry.id}`} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-rk-red text-white px-5 py-3 text-sm font-semibold">Request a Custom Quote <ArrowRight className="h-4 w-4" /></Link>

@@ -47,6 +47,11 @@ const MODEL_MAP = {
   import_jobs: "importJob",
   "import-job": "importJob",
   "import-jobs": "importJob",
+  inventory: "inventoryItem",
+  inventoryitem: "inventoryItem",
+  inventoryitems: "inventoryItem",
+  inventory_item: "inventoryItem",
+  inventory_items: "inventoryItem",
 };
 
 function normalizeItemOutput(modelName, item) {

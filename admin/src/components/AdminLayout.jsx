@@ -117,7 +117,7 @@ export default function AdminLayout() {
                     </div>
                     <div className="ml-auto flex items-center gap-3">
                         <button className="relative grid h-9 w-9 place-items-center rounded-lg border border-black/10 hover:bg-muted"><Bell className="h-4 w-4" /><span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rk-red" /></button>
-                        <a href="http://localhost:4321" target="_blank" rel="noreferrer" className="text-sm font-semibold text-ink-soft hover:text-rk-red hidden sm:block">View Site</a>
+                        <a href="https://rkprinter.in" target="_blank" rel="noreferrer" className="text-sm font-semibold text-ink-soft hover:text-rk-red hidden sm:block">View Site</a>
                         <div className="flex items-center gap-2.5 pl-2 border-l border-black/10">
                             <span className="grid h-9 w-9 place-items-center rounded-full bg-ink text-white text-sm font-bold uppercase">
                                 {user?.name?.[0] || user?.email?.[0] || 'A'}

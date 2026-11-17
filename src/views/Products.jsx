@@ -6,18 +6,17 @@ import { formatINR, SERVICE_CATEGORIES } from "@/lib/brand";
 import { Image as Img } from "@/components/ui/image";
 import ProductCard from "@/components/ProductCard";
 import CustomRequestCTA from "@/components/CustomRequestCTA";
-import { PRODUCTS, INDUSTRIES } from "@/data/siteData";
 
 export default function Products(props) {
     const [params] = useSearchParams();
-    const [items, setItems] = useState(props.initialProducts || PRODUCTS);
-    const [industries, setIndustries] = useState(props.initialIndustries || INDUSTRIES);
+    const [items, setItems] = useState(props.initialProducts || []);
+    const [industries, setIndustries] = useState(props.initialIndustries || []);
     const [q, setQ] = useState("");
     const [cat, setCat] = useState(params?.get ? (params.get("cat") || "ALL") : "ALL");
     const [ind, setInd] = useState(params?.get ? (params.get("industry") || "ALL") : "ALL");
     const [sort, setSort] = useState("created");
     const [onlyFeatured, setOnlyFeatured] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(!props.initialProducts || props.initialProducts.length === 0);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -40,8 +39,11 @@ export default function Products(props) {
                 ]);
                 if (prods?.length) setItems(prods.filter((p) => p.status === "ACTIVE" || p.status === "COMING_SOON"));
                 if (inds?.length) setIndustries(inds);
-            } catch (e) { }
-            setLoading(false);
+            } catch (e) {
+                console.error("Failed to load products:", e);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, []);
 
@@ -97,11 +99,26 @@ export default function Products(props) {
                         <button onClick={() => setOnlyFeatured((v) => !v)} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border transition ${onlyFeatured ? "border-rk-red bg-rk-red/5 text-rk-red" : "border-black/10 text-ink-soft"}`}>
                             <Star className="h-3.5 w-3.5" /> Featured only
                         </button>
-                        <p className="text-sm text-ink-soft">{filtered.length} products</p>
+                        <p className="text-sm text-ink-soft">{loading ? "Loading products..." : `${filtered.length} products`}</p>
                     </div>
 
                     {loading ? (
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-square rounded-2xl bg-muted animate-pulse" />)}</div>
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                            {Array.from({ length: 8 }).map((_, i) => (
+                                <div key={i} className="rounded-2xl border border-black/8 bg-white p-3.5 space-y-3 animate-pulse">
+                                    <div className="aspect-[4/3] rounded-xl bg-muted" />
+                                    <div className="space-y-2">
+                                        <div className="h-3 w-16 bg-muted rounded" />
+                                        <div className="h-4 w-3/4 bg-muted rounded" />
+                                        <div className="h-3 w-1/2 bg-muted rounded" />
+                                    </div>
+                                    <div className="flex justify-between items-center pt-2 border-t border-black/5">
+                                        <div className="h-4 w-20 bg-muted rounded" />
+                                        <div className="h-7 w-20 bg-muted rounded-lg" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : filtered.length === 0 ? (
                         <div className="text-center py-16">
                             <SlidersHorizontal className="h-10 w-10 text-ink-soft/30 mx-auto mb-3" />

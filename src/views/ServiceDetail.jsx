@@ -4,17 +4,14 @@ import { api } from "@/api/apiClient";
 import { ArrowRight, MessageCircle, Check, Phone } from "lucide-react";
 import { BRAND, waLink, telLink, formatINR } from "@/lib/brand";
 import { Image as Img } from "@/components/ui/image";
-import { SERVICES } from "@/data/siteData";
 
 export default function ServiceDetail(props) {
     const routeParams = useParams();
     const slug = props.slug || routeParams?.slug;
-    const initialItem = props.service || SERVICES.find((s) => s.slug === slug || s.id === slug) || null;
+    const initialItem = props.service || null;
     const [item, setItem] = useState(initialItem);
-    const [related, setRelated] = useState(
-        initialItem ? SERVICES.filter((s) => s.category === initialItem.category && s.id !== initialItem.id).slice(0, 3) : []
-    );
-    const [loading, setLoading] = useState(false);
+    const [related, setRelated] = useState([]);
+    const [loading, setLoading] = useState(!initialItem);
 
     useEffect(() => {
         (async () => {
@@ -25,12 +22,31 @@ export default function ServiceDetail(props) {
                     setItem(found);
                     setRelated(all.filter((s) => s.category === found.category && s.id !== found.id).slice(0, 3));
                 }
-            } catch (e) { }
-            setLoading(false);
+            } catch (e) {
+                console.error("Failed to load service detail:", e);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, [slug]);
 
-    if (loading) return <div className="py-24 text-center text-ink-soft">Loading...</div>;
+    if (loading) {
+        return (
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14 lg:py-20 animate-pulse space-y-6">
+                <div className="h-4 w-32 bg-muted rounded" />
+                <div className="h-10 w-2/3 bg-muted rounded" />
+                <div className="h-4 w-1/2 bg-muted rounded" />
+                <div className="grid lg:grid-cols-2 gap-10 pt-6">
+                    <div className="aspect-video bg-muted rounded-2xl" />
+                    <div className="space-y-4">
+                        <div className="h-6 w-1/3 bg-muted rounded" />
+                        <div className="h-24 w-full bg-muted rounded-xl" />
+                        <div className="h-12 w-48 bg-muted rounded-xl" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
     if (!item) return <div className="py-24 text-center"><p className="text-ink-soft">Service not found.</p><Link to="/services" className="mt-4 inline-block text-rk-red font-semibold">← Back to services</Link></div>;
 
     return (

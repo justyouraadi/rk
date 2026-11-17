@@ -4,16 +4,25 @@ import { api } from "@/api/apiClient";
 export default function FAQ() {
     const [faqs, setFaqs] = useState([]);
     const [open, setOpen] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let active = true;
         (async () => {
             try {
                 const sv = await api.entities.Service.list("-sort_order", 100);
                 const all = sv.flatMap((s) => s.faqs || []);
-                if (all.length) setFaqs(all);
-                else setFaqs(DEFAULTS);
-            } catch (e) { setFaqs(DEFAULTS); }
+                if (active) {
+                    if (all.length) setFaqs(all);
+                    else setFaqs(DEFAULTS);
+                }
+            } catch (e) {
+                if (active) setFaqs(DEFAULTS);
+            } finally {
+                if (active) setLoading(false);
+            }
         })();
+        return () => { active = false; };
     }, []);
 
     return (
@@ -26,15 +35,25 @@ export default function FAQ() {
             </section>
             <section className="py-12 lg:py-16">
                 <div className="mx-auto max-w-3xl px-4 sm:px-6 space-y-3">
-                    {faqs.map((f, i) => (
-                        <div key={i} className="rounded-xl border border-black/8 overflow-hidden">
-                            <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between p-5 text-left">
-                                <span className="font-semibold text-ink">{f.q}</span>
-                                <span className={`text-rk-red text-xl transition ${open === i ? "rotate-45" : ""}`}>+</span>
-                            </button>
-                            {open === i && <p className="px-5 pb-5 text-sm text-ink-soft">{f.a}</p>}
+                    {loading ? (
+                        <div className="space-y-3">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                                <div key={i} className="rounded-xl border border-black/8 p-5 space-y-2 animate-pulse bg-white">
+                                    <div className="h-5 w-3/4 bg-muted rounded" />
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    ) : (
+                        faqs.map((f, i) => (
+                            <div key={i} className="rounded-xl border border-black/8 overflow-hidden">
+                                <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between p-5 text-left">
+                                    <span className="font-semibold text-ink">{f.q}</span>
+                                    <span className={`text-rk-red text-xl transition ${open === i ? "rotate-45" : ""}`}>+</span>
+                                </button>
+                                {open === i && <p className="px-5 pb-5 text-sm text-ink-soft">{f.a}</p>}
+                            </div>
+                        ))
+                    )}
                 </div>
             </section>
         </div>

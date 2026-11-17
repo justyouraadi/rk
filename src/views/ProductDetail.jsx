@@ -6,21 +6,18 @@ import { BRAND, waLink, telLink, formatINR } from "@/lib/brand";
 import { Image as Img } from "@/components/ui/image";
 import ProductConfigurator from "@/components/ProductConfigurator";
 import ProductCard from "@/components/ProductCard";
-import { PRODUCTS, INDUSTRIES } from "@/data/siteData";
 
 export default function ProductDetail(props) {
     const routeParams = useParams();
     const slug = props.slug || routeParams?.slug;
     const [params] = useSearchParams();
     const ctxIndustry = params?.get ? params.get("industry") : null;
-    const initialItem = props.product || PRODUCTS.find((p) => p.slug === slug || p.id === slug) || null;
+    const initialItem = props.product || null;
     const [item, setItem] = useState(initialItem);
-    const [industries, setIndustries] = useState(props.industries || INDUSTRIES);
+    const [industries, setIndustries] = useState(props.industries || []);
     const [categories, setCategories] = useState([]);
-    const [related, setRelated] = useState(
-        initialItem ? PRODUCTS.filter((p) => p.category === initialItem.category && p.id !== initialItem.id).slice(0, 4) : []
-    );
-    const [loading, setLoading] = useState(false);
+    const [related, setRelated] = useState([]);
+    const [loading, setLoading] = useState(!initialItem);
     const [activeImg, setActiveImg] = useState(0);
 
     useEffect(() => {
@@ -38,12 +35,39 @@ export default function ProductDetail(props) {
                 }
                 if (inds?.length) setIndustries(inds);
                 if (cats?.length) setCategories(cats.filter((c) => !c.industry_id));
-            } catch (e) { }
-            setLoading(false);
+            } catch (e) {
+                console.error("Failed to load product detail:", e);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, [slug]);
 
-    if (loading) return <div className="py-24 text-center text-ink-soft">Loading...</div>;
+    if (loading) {
+        return (
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 lg:py-14 animate-pulse">
+                <div className="h-4 w-48 bg-muted rounded mb-8" />
+                <div className="grid lg:grid-cols-2 gap-10 lg:gap-14">
+                    <div className="space-y-4">
+                        <div className="aspect-square rounded-2xl bg-muted" />
+                        <div className="grid grid-cols-4 gap-3">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="aspect-square rounded-xl bg-muted" />
+                            ))}
+                        </div>
+                    </div>
+                    <div className="space-y-5">
+                        <div className="h-4 w-24 bg-muted rounded" />
+                        <div className="h-8 w-3/4 bg-muted rounded" />
+                        <div className="h-6 w-1/3 bg-muted rounded" />
+                        <div className="h-20 w-full bg-muted rounded-xl" />
+                        <div className="h-12 w-full bg-muted rounded-xl" />
+                        <div className="h-12 w-full bg-muted rounded-xl" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
     if (!item) return <div className="py-24 text-center"><p className="text-ink-soft">Product not found.</p><Link to="/products" className="mt-4 inline-block text-rk-red font-semibold">← Back to products</Link></div>;
 
     const gallery = [item.image_url, ...(item.gallery || [])].filter(Boolean);

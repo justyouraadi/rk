@@ -44,6 +44,7 @@ const ENTITY_ROUTES = {
     Customer: 'customers',
     Notification: 'notifications',
     ImportJob: 'import-jobs',
+    InventoryItem: 'inventory',
     User: 'users',
     Admin: 'admins',
 };

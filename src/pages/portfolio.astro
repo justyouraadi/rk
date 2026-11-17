@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Portfolio from '../views/Portfolio.jsx';
-import { PORTFOLIO_ITEMS } from '../data/siteData';
 import { BRAND } from '../lib/brand';
 ---
 
@@ -9,6 +8,6 @@ import { BRAND } from '../lib/brand';
   title={`Our Portfolio & Client Work | ${BRAND.name}`}
   description="Browse our recent showcase of high-end signage fabrication, luxury packaging boxes, corporate stationery, and expo booths."
 >
-  <Portfolio client:load initialItems={PORTFOLIO_ITEMS} />
+  <Portfolio client:load />
 </Layout>
 

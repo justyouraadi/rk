@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { api } from "@/api/apiClient";
 import { ArrowRight, Search, Printer, Palette, Package, Sparkles, Factory } from "lucide-react";
 import { Image as Img } from "@/components/ui/image";
-import { INDUSTRIES } from "@/data/siteData";
 
 const SERVICE_CATS = [
     { k: "PRINTING", i: Printer, t: "Commercial Printing", d: "Visiting cards, brochures, banners, stationery & more." },
@@ -13,13 +12,19 @@ const SERVICE_CATS = [
 ];
 
 export default function Services(props) {
-    const [industries, setIndustries] = useState(props.initialIndustries || INDUSTRIES);
+    const [industries, setIndustries] = useState(props.initialIndustries || []);
     const [q, setQ] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(!props.initialIndustries || props.initialIndustries.length === 0);
 
     useEffect(() => {
         api.entities.Industry.filter({ status: "ACTIVE" }, "sort_order", 500)
-            .then(res => { if (res?.length) setIndustries(res); }).catch(() => { }).finally(() => setLoading(false));
+            .then(res => {
+                if (res?.length) setIndustries(res);
+            })
+            .catch(err => console.error("Failed to load industries:", err))
+            .finally(() => {
+                setLoading(false);
+            });
     }, []);
 
     const filtered = industries.filter((ind) => !q || (ind.name + " " + (ind.short_description || "")).toLowerCase().includes(q.toLowerCase()));
@@ -49,7 +54,18 @@ export default function Services(props) {
             <section className="py-14 lg:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6">
                     {loading ? (
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-64 rounded-2xl bg-muted animate-pulse" />)}</div>
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="rounded-2xl border border-black/8 bg-white overflow-hidden animate-pulse">
+                                    <div className="aspect-[16/10] bg-muted" />
+                                    <div className="p-5 space-y-2.5">
+                                        <div className="h-5 w-1/2 bg-muted rounded" />
+                                        <div className="h-3.5 w-full bg-muted rounded" />
+                                        <div className="h-3.5 w-3/4 bg-muted rounded" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : filtered.length === 0 ? (
                         <p className="text-center text-ink-soft py-12">No industries found. <Link to="/get-quote" className="text-rk-red font-semibold">Request a custom quote</Link>.</p>
                     ) : (

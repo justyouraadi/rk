@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Home from '../views/Home.jsx';
-import { SERVICES, PRODUCTS, REVIEWS, OFFERS, PORTFOLIO_ITEMS, INDUSTRIES } from '../data/siteData';
 import { BRAND } from '../lib/brand';
 ---
 
@@ -9,14 +8,6 @@ import { BRAND } from '../lib/brand';
   title={`${BRAND.name} | Complete Printing & Branding Partner - ${BRAND.city}`}
   description="High-definition offset printing, commercial signage, retail packaging, and promotional apparel in Kotputli, Rajasthan. Quick turnaround & premium finishing."
 >
-  <Home
-    client:load
-    initialServices={SERVICES}
-    initialProducts={PRODUCTS}
-    initialReviews={REVIEWS}
-    initialOffers={OFFERS}
-    initialPortfolio={PORTFOLIO_ITEMS}
-    initialIndustries={INDUSTRIES}
-  />
+  <Home client:load />
 </Layout>
 

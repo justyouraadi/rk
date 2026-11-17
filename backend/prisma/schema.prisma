@@ -274,7 +274,7 @@ model Product {
   id                 String           @id @default(cuid())
   name               String
   slug               String           @unique
-  sku                String?          @unique
+  sku                String?
   category           ServiceCategory?
   category_id        String?
   category_ids       Json?            // array of category ids
@@ -549,4 +549,19 @@ model ImportJob {
   updatedAt        DateTime        @updatedAt
 
   @@map("import_jobs")
+}
+
+model InventoryItem {
+  id            String   @id @default(cuid())
+  name          String
+  category      String   @default("PAPER")
+  current_stock Float    @default(0)
+  minimum_stock Float    @default(0)
+  unit          String?  @default("pcs")
+  supplier      String?
+  purchase_cost Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("inventory_items")
 }
