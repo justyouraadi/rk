@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from "react";
-import { ArrowRight, Check, ShoppingCart, MessageCircle } from "lucide-react";
+import { ArrowRight, Check, ShoppingCart, MessageCircle, Zap } from "lucide-react";
 import { formatINR, waLink } from "@/lib/brand";
 import { useEnquiry } from "@/lib/EnquiryContext";
 import { useToast } from "@/components/ui/use-toast";
+import OrderCheckoutModal from "./OrderCheckoutModal";
 
 export default function ProductConfigurator({ product, industryId }) {
     const [selections, setSelections] = useState({});
     const [quantity, setQuantity] = useState("");
+    const [checkoutOpen, setCheckoutOpen] = useState(false);
     const { addItem } = useEnquiry();
     const { toast } = useToast();
 
@@ -86,28 +88,45 @@ export default function ProductConfigurator({ product, industryId }) {
 
     if (!hasOptions && !quantityOptions.length) {
         return (
-            <div className="mt-6 flex flex-wrap gap-3">
-                <a
-                    href={`/get-quote?${quoteParams.toString()}`}
-                    className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rk-red/20 hover:opacity-90 transition"
-                >
-                    Get a Quote <ArrowRight className="h-4 w-4" />
-                </a>
-                <button
-                    onClick={addToEnquiry}
-                    className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
-                >
-                    <ShoppingCart className="h-4 w-4" /> Add to Enquiry
-                </button>
-                <a
-                    href={waMessage()}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
-                >
-                    <MessageCircle className="h-4 w-4" /> WhatsApp
-                </a>
-            </div>
+            <>
+                <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                        onClick={() => setCheckoutOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rk-red/20 hover:opacity-90 transition"
+                    >
+                        <Zap className="h-4 w-4" /> Order Now
+                    </button>
+                    <a
+                        href={`/get-quote?${quoteParams.toString()}`}
+                        className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
+                    >
+                        Get a Quote <ArrowRight className="h-4 w-4" />
+                    </a>
+                    <button
+                        onClick={addToEnquiry}
+                        className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
+                    >
+                        <ShoppingCart className="h-4 w-4" /> Add to Enquiry
+                    </button>
+                    <a
+                        href={waMessage()}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-5 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
+                    >
+                        <MessageCircle className="h-4 w-4" /> WhatsApp
+                    </a>
+                </div>
+
+                <OrderCheckoutModal
+                    open={checkoutOpen}
+                    onClose={() => setCheckoutOpen(false)}
+                    product={product}
+                    selections={selections}
+                    quantity={quantity || 1}
+                    calculatedPrice={currentPrice}
+                />
+            </>
         );
     }
 
@@ -220,6 +239,18 @@ export default function ProductConfigurator({ product, industryId }) {
 
                 <div className="flex gap-2 flex-wrap">
                     <button
+                        onClick={() => setCheckoutOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-rk-red/20 hover:opacity-90 transition"
+                    >
+                        <Zap className="h-4 w-4" /> Order Now
+                    </button>
+                    <a
+                        href={`/get-quote?${quoteParams.toString()}`}
+                        className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-4 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
+                    >
+                        Get a Quote <ArrowRight className="h-4 w-4" />
+                    </a>
+                    <button
                         onClick={addToEnquiry}
                         className="inline-flex items-center gap-2 rounded-lg border border-black/15 bg-white px-4 py-3 text-sm font-semibold text-ink hover:bg-muted transition"
                     >
@@ -233,14 +264,17 @@ export default function ProductConfigurator({ product, industryId }) {
                     >
                         <MessageCircle className="h-4 w-4" /> WhatsApp
                     </a>
-                    <a
-                        href={`/get-quote?${quoteParams.toString()}`}
-                        className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rk-red/20 hover:opacity-90 transition"
-                    >
-                        Get a Quote <ArrowRight className="h-4 w-4" />
-                    </a>
                 </div>
             </div>
+
+            <OrderCheckoutModal
+                open={checkoutOpen}
+                onClose={() => setCheckoutOpen(false)}
+                product={product}
+                selections={selections}
+                quantity={quantity || 1}
+                calculatedPrice={currentPrice}
+            />
         </div>
     );
 }

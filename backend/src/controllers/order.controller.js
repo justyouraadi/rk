@@ -5,7 +5,10 @@ import { ErrorResponse, SuccessResponse } from "../utils/index.js";
 class OrderController {
   async createOrder(req, res) {
     try {
-      const response = await OrderService.createOrder(req.body);
+      const response = await OrderService.createOrder({
+        ...req.body,
+        user_id: req.user?.id || req.body?.user_id,
+      });
       SuccessResponse.message = "Order created successfully";
       SuccessResponse.data = response;
       return res.status(StatusCodes.CREATED).json(SuccessResponse);
@@ -91,6 +94,21 @@ class OrderController {
       return res.status(StatusCodes.OK).json(SuccessResponse);
     } catch (error) {
       ErrorResponse.message = "Failed to delete order";
+      ErrorResponse.error = error;
+      return res
+        .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(ErrorResponse);
+    }
+  }
+
+  async approveOrder(req, res) {
+    try {
+      const response = await OrderService.approveOrder(req.params.id, req.body);
+      SuccessResponse.message = "Order approved successfully";
+      SuccessResponse.data = response;
+      return res.status(StatusCodes.OK).json(SuccessResponse);
+    } catch (error) {
+      ErrorResponse.message = error.message || "Failed to approve order";
       ErrorResponse.error = error;
       return res
         .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)

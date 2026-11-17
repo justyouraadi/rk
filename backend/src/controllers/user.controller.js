@@ -73,6 +73,22 @@ class UserController {
     }
   }
 
+  async getUserOrders(req, res) {
+    try {
+      const userId = req.user.id;
+      const response = await UserService.getUserOrders(userId);
+      SuccessResponse.message = "User orders retrieved successfully";
+      SuccessResponse.data = response;
+      return res.status(StatusCodes.OK).json(SuccessResponse);
+    } catch (error) {
+      ErrorResponse.message = "Failed to retrieve user orders";
+      ErrorResponse.error = error;
+      return res
+        .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(ErrorResponse);
+    }
+  }
+
   async getUserById(req, res) {
     try {
       const userId = req.params.id;

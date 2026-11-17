@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, LogIn, UserPlus } from "lucide-react";
+import { Menu, X, User, LogIn, UserPlus, LogOut, ShoppingBag } from "lucide-react";
 import { BRAND } from "@/lib/brand";
 
 const NAV = [
@@ -19,26 +19,40 @@ export default function PublicNavbar() {
     const loc = useLocation();
     const isActive = (p) => (p === "/" ? loc.pathname === "/" : loc.pathname.startsWith(p));
 
-    useEffect(() => {
-        setOpen(false);
-        const checkAuth = () => {
-            try {
-                if (typeof window === "undefined") return;
-                const token = localStorage.getItem("token") || localStorage.getItem("rk_token");
-                const stored = localStorage.getItem("rk_user");
-                if (token && stored) {
-                    setUser(JSON.parse(stored));
-                } else {
-                    setUser(null);
-                }
-            } catch {
+    const checkAuth = () => {
+        try {
+            if (typeof window === "undefined") return;
+            const token = localStorage.getItem("token") || localStorage.getItem("rk_token");
+            const stored = localStorage.getItem("rk_user");
+            if (token && stored) {
+                setUser(JSON.parse(stored));
+            } else {
                 setUser(null);
             }
-        };
+        } catch {
+            setUser(null);
+        }
+    };
+
+    useEffect(() => {
+        setOpen(false);
         checkAuth();
         window.addEventListener("storage", checkAuth);
         return () => window.removeEventListener("storage", checkAuth);
     }, [loc.pathname]);
+
+    const handleLogout = () => {
+        try {
+            localStorage.removeItem("token");
+            localStorage.removeItem("rk_token");
+            localStorage.removeItem("rk_user");
+            setUser(null);
+            window.dispatchEvent(new Event("storage"));
+            window.location.href = "/login";
+        } catch (e) {
+            console.error("Logout error:", e);
+        }
+    };
 
     return (
         <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/5">
@@ -67,14 +81,23 @@ export default function PublicNavbar() {
 
                     <div className="hidden lg:flex items-center gap-2.5">
                         {user ? (
-                            <Link
-                                to="/portal"
-                                className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition"
-                                title="Customer Portal"
-                            >
-                                <User className="h-4 w-4" />
-                                <span className="max-w-[130px] truncate">{user.full_name || user.name || "My Portal"}</span>
-                            </Link>
+                            <div className="flex items-center gap-2">
+                                <Link
+                                    to="/profile"
+                                    className="inline-flex items-center gap-2 rounded-lg bg-rk-red px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-90 transition"
+                                    title="My Profile & Orders"
+                                >
+                                    <User className="h-3.5 w-3.5" />
+                                    <span className="max-w-[120px] truncate">{user.full_name || user.name || "My Profile"}</span>
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-black/15 bg-white px-3 py-2 text-xs font-semibold text-ink-soft hover:text-rk-red hover:bg-muted transition"
+                                    title="Sign Out"
+                                >
+                                    <LogOut className="h-3.5 w-3.5" /> Logout
+                                </button>
+                            </div>
                         ) : (
                             <div className="flex items-center gap-2">
                                 <Link
@@ -113,14 +136,25 @@ export default function PublicNavbar() {
 
                         <div className="pt-3 border-t border-black/10 my-2">
                             {user ? (
-                                <Link
-                                    to="/portal"
-                                    onClick={() => setOpen(false)}
-                                    className="flex items-center justify-center gap-2 rounded-lg bg-rk-red text-white px-4 py-3 text-sm font-semibold hover:opacity-90 shadow-sm"
-                                >
-                                    <User className="h-4 w-4" />
-                                    My Portal ({user.full_name || user.name || "Account"})
-                                </Link>
+                                <div className="space-y-2">
+                                    <Link
+                                        to="/profile"
+                                        onClick={() => setOpen(false)}
+                                        className="flex items-center justify-center gap-2 rounded-lg bg-rk-red text-white px-4 py-2.5 text-sm font-semibold hover:opacity-90 shadow-sm"
+                                    >
+                                        <User className="h-4 w-4" />
+                                        My Profile & Orders ({user.full_name || user.name || "Account"})
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            setOpen(false);
+                                            handleLogout();
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 rounded-lg border border-black/15 bg-white text-ink px-4 py-2.5 text-sm font-semibold hover:bg-muted"
+                                    >
+                                        <LogOut className="h-4 w-4" /> Sign Out
+                                    </button>
+                                </div>
                             ) : (
                                 <div className="grid grid-cols-2 gap-2 pt-1">
                                     <Link

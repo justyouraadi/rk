@@ -36,7 +36,9 @@ export default function Register() {
                 email: email.trim(),
                 password,
             });
-            window.location.href = safeReturnTo();
+            const returnTo = safeReturnTo();
+            const destination = (!returnTo || returnTo === "/") ? "/profile" : returnTo;
+            window.location.href = destination;
         } catch (err) {
             setError(err.message || "Registration failed");
         } finally {

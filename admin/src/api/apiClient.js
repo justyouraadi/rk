@@ -4,10 +4,9 @@ const DEFAULT_REMOTE_API = 'https://backend-b942.onvoroa.com/api/v1';
 
 // API Base URL connecting to our Express/Prisma backend
 export const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL ||
-    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
         ? 'http://localhost:3000/api/v1'
-        : DEFAULT_REMOTE_API);
+        : (import.meta.env.VITE_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL || DEFAULT_REMOTE_API);
 
 // Fallback in-memory data store in case backend is temporarily unreachable
 const fallbackData = {
@@ -231,6 +230,26 @@ function createEntityHandler(entityName) {
                 return items[idx];
             }
             return { id, ...data };
+        },
+
+        approve: async (id, data = {}) => {
+            invalidateEntityCache(entityName);
+            try {
+                const res = await fetchWithTimeout(`${API_BASE_URL}/${route}/${id}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+                    body: JSON.stringify(data),
+                }, 15000);
+                const json = await res.json();
+                if (res.ok && json.success && json.data) {
+                    return json.data;
+                }
+                const msg = json.message || (json.error && (json.error.explanation || json.error.message)) || `Failed to approve ${entityName}`;
+                throw new Error(msg);
+            } catch (err) {
+                console.error(`[Backend API] Approve ${entityName}/${id} failed:`, err.message);
+                throw err;
+            }
         },
 
         delete: async (id) => {
@@ -495,9 +514,37 @@ const app = {
     }),
 };
 
+const payments = {
+    createRazorpayOrder: async (data, idempotencyKey) => {
+        const headers = { 'Content-Type': 'application/json', ...getAuthHeader() };
+        if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+        const res = await fetchWithTimeout(`${API_BASE_URL}/payments/razorpay/order`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data),
+        }, 15000);
+        const json = await res.json();
+        if (res.ok && json.success && json.data) return json.data;
+        throw new Error(json.message || 'Failed to create Razorpay payment order');
+    },
+    verifyRazorpayPayment: async (data, idempotencyKey) => {
+        const headers = { 'Content-Type': 'application/json', ...getAuthHeader() };
+        if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+        const res = await fetchWithTimeout(`${API_BASE_URL}/payments/razorpay/verify`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data),
+        }, 15000);
+        const json = await res.json();
+        if (res.ok && json.success && json.data) return json.data;
+        throw new Error(json.message || 'Payment verification failed');
+    },
+};
+
 export const apiClient = {
     entities,
     auth,
+    payments,
     integrations,
     app,
 };

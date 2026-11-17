@@ -215,6 +215,56 @@ class OrderService {
       handlePrismaError(error);
     }
   }
+
+  /**
+   * Admin Approval Action
+   */
+  async approveOrder(id, { notes = "", approvedBy = "Admin", nextStatus = "DESIGN_APPROVAL" } = {}) {
+    try {
+      if (!id) throw new AppError(["Order ID is required for approval"], StatusCodes.BAD_REQUEST);
+
+      const existing = await this.getOrderById(id);
+      if (!existing) {
+        throw new AppError(["Order not found"], StatusCodes.NOT_FOUND);
+      }
+
+      const history = Array.isArray(existing.status_history) ? [...existing.status_history] : [];
+      history.push({
+        status: "APPROVED",
+        label: "Order Approved by Admin",
+        timestamp: new Date().toISOString(),
+        note: notes || "Order verified and approved by admin. Moved to production queue.",
+        approved_by: approvedBy,
+      });
+
+      const updated = await prisma.order.update({
+        where: { id: existing.id },
+        data: {
+          order_status: nextStatus,
+          status: nextStatus,
+          status_history: history,
+        },
+      });
+
+      if (updated.customer_email) {
+        EmailService.sendOrderStatusNotification({
+          to: updated.customer_email,
+          name: updated.customer_name || "Valued Customer",
+          orderNumber: updated.order_number,
+          status: `APPROVED - ${nextStatus.replace(/_/g, " ")}`,
+          notes: notes || "Your order has been reviewed, approved, and scheduled for production.",
+          totalAmount: updated.total_amount,
+        }).catch((err) => {
+          console.warn("[OrderService] Failed to send approval notification email:", err.message);
+        });
+      }
+
+      return normalizeOrderOutput(updated);
+    } catch (error) {
+      console.error("[OrderService] Error approving order:", error);
+      handlePrismaError(error);
+    }
+  }
 }
 
 export default new OrderService();

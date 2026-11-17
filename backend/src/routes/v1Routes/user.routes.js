@@ -19,6 +19,7 @@ router.get("/me", AuthMiddleware.authenticate, UserController.getProfile);
 router.get("/profile", AuthMiddleware.authenticate, UserController.getProfile);
 router.put("/profile", AuthMiddleware.authenticate, UserController.updateProfile);
 router.patch("/profile", AuthMiddleware.authenticate, UserController.updateProfile);
+router.get("/orders", AuthMiddleware.authenticate, UserController.getUserOrders);
 
 // Admin-facing or specific user routes
 router.get("/", AuthMiddleware.authenticate, UserController.getAllUsers);

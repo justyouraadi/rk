@@ -3,10 +3,12 @@ import UploadMiddleware, {
   uploadSingleFile,
   uploadMultipleFiles,
 } from "./upload.middleware.js";
+import idempotency from "./idempotency.middleware.js";
 
 export {
   AuthMiddleware,
   UploadMiddleware,
   uploadSingleFile,
   uploadMultipleFiles,
+  idempotency,
 };

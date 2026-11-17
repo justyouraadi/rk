@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Profile from '../views/Profile.jsx';
+import { BRAND } from '../lib/brand';
+---
+
+<Layout
+  title={`My Profile & Orders | ${BRAND.name}`}
+  description="Manage your account profile, track printing orders, view quotations, and manage delivery details."
+>
+  <Profile client:only="react" />
+</Layout>

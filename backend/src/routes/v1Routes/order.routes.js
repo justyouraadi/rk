@@ -1,12 +1,15 @@
 import { Router } from "express";
 import { OrderController } from "../../controllers/index.js";
 import { authenticateUser } from "../../middlewares/auth.middleware.js";
+import { idempotency } from "../../middlewares/idempotency.middleware.js";
 
 const router = Router();
 
 router.get("/track/:orderNumber", OrderController.trackOrder);
 router.get("/", OrderController.getAllOrders);
-router.post("/", OrderController.createOrder);
+router.post("/", authenticateUser, idempotency({ required: false }), OrderController.createOrder);
+router.post("/:id/approve", OrderController.approveOrder);
+router.patch("/:id/approve", OrderController.approveOrder);
 router.get("/:id", OrderController.getOrderById);
 router.put("/:id", OrderController.updateOrder);
 router.patch("/:id", OrderController.updateOrder);

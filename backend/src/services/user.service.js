@@ -225,6 +225,39 @@ class UserService {
     }
   }
 
+  async getUserOrders(userId) {
+    try {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new AppError(["User not found"], StatusCodes.NOT_FOUND);
+      }
+
+      const criteria = [{ user_id: userId }];
+      if (user.email) criteria.push({ customer_email: user.email });
+      if (user.phone) {
+        criteria.push({ customer_phone: user.phone });
+        const clean10 = user.phone.replace(/\D/g, "").slice(-10);
+        if (clean10 && clean10 !== user.phone) {
+          criteria.push({ customer_phone: { contains: clean10 } });
+        }
+      }
+
+      const orders = await prisma.order.findMany({
+        where: { OR: criteria },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return orders.map((o) => ({
+        ...o,
+        created_date: o.createdAt.toISOString(),
+        updated_date: o.updatedAt.toISOString(),
+      }));
+    } catch (error) {
+      console.error("Error retrieving user orders:", error);
+      handlePrismaError(error);
+    }
+  }
+
   async forgotPassword(email) {
     try {
       if (!email) {

@@ -4,11 +4,9 @@ const DEFAULT_REMOTE_API = 'https://backend-b942.onvoroa.com/api/v1';
 
 // API Base URL connecting to our Express/Prisma backend
 export const API_BASE_URL =
-    import.meta.env.PUBLIC_API_BASE_URL ||
-    import.meta.env.VITE_API_BASE_URL ||
-    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
         ? 'http://localhost:3000/api/v1'
-        : DEFAULT_REMOTE_API);
+        : (import.meta.env.PUBLIC_API_BASE_URL || import.meta.env.VITE_API_BASE_URL || DEFAULT_REMOTE_API);
 
 // Fallback in-memory data store in case backend is temporarily unreachable
 const fallbackData = {
@@ -214,6 +212,25 @@ function createEntityHandler(entityName) {
             return { id, ...data };
         },
 
+        approve: async (id, data = {}) => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/${route}/${id}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+                    body: JSON.stringify(data),
+                });
+                const json = await res.json();
+                if (res.ok && json.success && json.data) {
+                    return json.data;
+                }
+                const msg = json.message || (json.error && (json.error.explanation || json.error.message)) || `Failed to approve ${entityName}`;
+                throw new Error(msg);
+            } catch (err) {
+                console.error(`[Backend API] Approve ${entityName}/${id} failed:`, err.message);
+                throw err;
+            }
+        },
+
         delete: async (id) => {
             try {
                 const res = await fetch(`${API_BASE_URL}/${route}/${id}`, {
@@ -338,6 +355,7 @@ const auth = {
                     localStorage.setItem('rk_token', token);
                 }
                 localStorage.setItem('rk_user', JSON.stringify(u));
+                window.dispatchEvent(new Event('storage'));
             }
             return { ...json.data, user: u };
         }
@@ -364,6 +382,7 @@ const auth = {
                     localStorage.setItem('rk_token', token);
                 }
                 localStorage.setItem('rk_user', JSON.stringify(u));
+                window.dispatchEvent(new Event('storage'));
             }
             return { ...json.data, user: u };
         }
@@ -449,10 +468,28 @@ const auth = {
             };
             if (typeof window !== 'undefined') {
                 localStorage.setItem('rk_user', JSON.stringify(u));
+                window.dispatchEvent(new Event('storage'));
             }
             return u;
         }
         throw new Error(json.message || 'Failed to update profile');
+    },
+
+    getMyOrders: async () => {
+        const token = api.auth.getToken();
+        if (!token) return [];
+        try {
+            const res = await fetch(`${API_BASE_URL}/users/orders`, {
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success && Array.isArray(json.data)) return json.data;
+            }
+        } catch (err) {
+            console.warn('[Website Auth] Failed to fetch user orders:', err.message);
+        }
+        return [];
     },
 
     logout: async () => {
@@ -460,6 +497,7 @@ const auth = {
             localStorage.removeItem('token');
             localStorage.removeItem('rk_token');
             localStorage.removeItem('rk_user');
+            window.dispatchEvent(new Event('storage'));
         }
     },
 
@@ -584,9 +622,37 @@ const app = {
     }),
 };
 
+const payments = {
+    createRazorpayOrder: async (data, idempotencyKey) => {
+        const headers = { 'Content-Type': 'application/json', ...getAuthHeader() };
+        if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+        const res = await fetch(`${API_BASE_URL}/payments/razorpay/order`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.data) return json.data;
+        throw new Error(json.message || (json.error && (json.error.explanation || json.error.message)) || 'Failed to create payment order');
+    },
+    verifyRazorpayPayment: async (data, idempotencyKey) => {
+        const headers = { 'Content-Type': 'application/json', ...getAuthHeader() };
+        if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+        const res = await fetch(`${API_BASE_URL}/payments/razorpay/verify`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.data) return json.data;
+        throw new Error(json.message || (json.error && (json.error.explanation || json.error.message)) || 'Payment verification failed');
+    },
+};
+
 export const apiClient = {
     entities,
     auth,
+    payments,
     integrations,
     app,
 };

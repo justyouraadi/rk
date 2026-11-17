@@ -1,7 +1,9 @@
-import { prisma } from "../config/index.js";
+import crypto from "crypto";
+import { prisma, razorpay, ServerConfig } from "../config/index.js";
 import AppError from "../utils/app.error.js";
 import { handlePrismaError } from "../utils/prisma-error.handler.js";
 import { StatusCodes } from "http-status-codes";
+import EmailService from "./email.service.js";
 
 function normalizePaymentOutput(item) {
   if (!item || typeof item !== "object") return item;
@@ -186,6 +188,241 @@ class PaymentService {
       return { id: existing.id };
     } catch (error) {
       console.error("Error deleting payment:", error);
+      handlePrismaError(error);
+    }
+  }
+
+  /**
+   * Create Razorpay Order
+   * Accepts either an existing order_id or complete order parameters to initialize checkout.
+   */
+  async createRazorpayOrder(params = {}) {
+    try {
+      let order = null;
+      let totalAmount = 0;
+
+      if (params.order_id) {
+        order = await prisma.order.findFirst({
+          where: { OR: [{ id: params.order_id }, { order_number: params.order_id }] },
+        });
+        if (!order) {
+          throw new AppError(["Order not found"], StatusCodes.NOT_FOUND);
+        }
+        totalAmount = Number(order.pending_amount || order.total_amount);
+      } else {
+        // Direct order creation with checkout
+        if (!params.customer_name || !params.customer_phone) {
+          throw new AppError(["Customer name and phone are required for checkout"], StatusCodes.BAD_REQUEST);
+        }
+        totalAmount = Number(params.total_amount || params.amount || 0);
+        if (totalAmount <= 0) {
+          throw new AppError(["Total amount must be greater than 0"], StatusCodes.BAD_REQUEST);
+        }
+
+        const orderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+        const initialHistory = [
+          {
+            status: "PLACED",
+            label: "Order Placed",
+            timestamp: new Date().toISOString(),
+            note: "Order placed online, awaiting payment confirmation & admin approval",
+          },
+        ];
+
+        order = await prisma.order.create({
+          data: {
+            order_number: orderNumber,
+            user_id: params.user_id || null,
+            customer_name: params.customer_name,
+            customer_phone: params.customer_phone,
+            customer_email: params.customer_email || null,
+            shipping_address: params.shipping_address || null,
+            items: params.items || [],
+            total_amount: totalAmount,
+            paid_amount: 0,
+            pending_amount: totalAmount,
+            payment_status: "PENDING",
+            order_status: "PLACED",
+            status: "PLACED",
+            priority: params.priority || "MEDIUM",
+            notes: params.notes || null,
+            status_history: initialHistory,
+          },
+        });
+      }
+
+      // Amount in paise for Razorpay
+      const amountInPaise = Math.round(totalAmount * 100);
+
+      const rzpOptions = {
+        amount: amountInPaise,
+        currency: params.currency || "INR",
+        receipt: order.order_number,
+        notes: {
+          order_id: order.id,
+          order_number: order.order_number,
+          customer_name: order.customer_name,
+          customer_phone: order.customer_phone || "",
+        },
+      };
+
+      const rzpOrder = await razorpay.orders.create(rzpOptions);
+
+      // Record Razorpay Order ID in order notes or tracking
+      const updatedNotes = order.notes
+        ? `${order.notes} | Razorpay Order: ${rzpOrder.id}`
+        : `Razorpay Order: ${rzpOrder.id}`;
+
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { notes: updatedNotes },
+      });
+
+      return {
+        order: {
+          id: order.id,
+          order_number: order.order_number,
+          customer_name: order.customer_name,
+          customer_phone: order.customer_phone,
+          customer_email: order.customer_email,
+          shipping_address: order.shipping_address,
+          total_amount: order.total_amount,
+          order_status: order.order_status,
+          payment_status: order.payment_status,
+        },
+        razorpay_order: {
+          id: rzpOrder.id,
+          amount: rzpOrder.amount,
+          currency: rzpOrder.currency,
+          receipt: rzpOrder.receipt,
+        },
+        razorpay_key_id: ServerConfig.Razorpay.KEY_ID,
+      };
+    } catch (error) {
+      console.error("[PaymentService] Error creating Razorpay order:", error);
+      handlePrismaError(error);
+    }
+  }
+
+  /**
+   * Verify Razorpay Payment Signature and finalize order
+   */
+  async verifyRazorpayPayment({
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    order_id,
+    order_number,
+  }) {
+    try {
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        throw new AppError(
+          ["Missing required Razorpay payment credentials for verification"],
+          StatusCodes.BAD_REQUEST
+        );
+      }
+
+      // 1. Verify signature using HMAC SHA256
+      const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+      const expectedSignature = crypto
+        .createHmac("sha256", ServerConfig.Razorpay.KEY_SECRET)
+        .update(body)
+        .digest("hex");
+
+      if (expectedSignature !== razorpay_signature) {
+        throw new AppError(["Invalid Razorpay signature. Verification failed."], StatusCodes.BAD_REQUEST);
+      }
+
+      // 2. Locate the Order
+      const lookupCriteria = [];
+      if (order_id) lookupCriteria.push({ id: order_id });
+      if (order_number) lookupCriteria.push({ order_number });
+      if (order_id) lookupCriteria.push({ order_number: order_id });
+
+      let order = await prisma.order.findFirst({
+        where: lookupCriteria.length ? { OR: lookupCriteria } : { notes: { contains: razorpay_order_id } },
+      });
+
+      if (!order) {
+        // Fallback: check if notes contains the rzp order id
+        order = await prisma.order.findFirst({
+          where: { notes: { contains: razorpay_order_id } },
+        });
+      }
+
+      if (!order) {
+        throw new AppError(["Associated order not found for payment verification"], StatusCodes.NOT_FOUND);
+      }
+
+      // 3. Check for existing payment record with this transaction ref (idempotent DB safeguard)
+      let payment = await prisma.payment.findFirst({
+        where: { transaction_ref: razorpay_payment_id },
+      });
+
+      if (!payment) {
+        const pNum = `PAY-${Date.now().toString().slice(-6)}`;
+        payment = await prisma.payment.create({
+          data: {
+            payment_id: pNum,
+            payment_number: pNum,
+            order_id: order.id,
+            order_number: order.order_number,
+            customer_name: order.customer_name,
+            amount: Number(order.total_amount),
+            payment_method: "ONLINE",
+            transaction_ref: razorpay_payment_id,
+            status: "SUCCESS",
+            note: `Razorpay Payment ID: ${razorpay_payment_id}, Order: ${razorpay_order_id}`,
+            notes: `Razorpay Payment ID: ${razorpay_payment_id}, Order: ${razorpay_order_id}`,
+          },
+        });
+      }
+
+      // 4. Update Order status and history
+      const history = Array.isArray(order.status_history) ? [...order.status_history] : [];
+      const paymentAlreadyRecorded = history.some((h) => h.status === "PAYMENT_CONFIRMED");
+
+      if (!paymentAlreadyRecorded) {
+        history.push({
+          status: "PAYMENT_CONFIRMED",
+          label: "Payment Confirmed",
+          timestamp: new Date().toISOString(),
+          note: `Payment of ₹${order.total_amount} received via Razorpay (${razorpay_payment_id}). Awaiting admin review and approval.`,
+        });
+      }
+
+      const updatedOrder = await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          paid_amount: Number(order.total_amount),
+          pending_amount: 0,
+          payment_status: "PAID",
+          status_history: history,
+        },
+      });
+
+      // 5. Send order notification email if customer email exists
+      if (updatedOrder.customer_email) {
+        EmailService.sendOrderStatusNotification({
+          to: updatedOrder.customer_email,
+          name: updatedOrder.customer_name || "Customer",
+          orderNumber: updatedOrder.order_number,
+          status: "PAYMENT_CONFIRMED (Awaiting Admin Approval)",
+          notes: `Thank you for your payment of ₹${updatedOrder.total_amount}. Your order is now awaiting admin review and approval before entering production.`,
+          totalAmount: updatedOrder.total_amount,
+        }).catch((err) => {
+          console.warn("[PaymentService] Failed to send payment confirmation email:", err.message);
+        });
+      }
+
+      return {
+        success: true,
+        message: "Payment successfully verified and order marked as paid",
+        order: updatedOrder,
+        payment,
+      };
+    } catch (error) {
+      console.error("[PaymentService] Error verifying Razorpay payment:", error);
       handlePrismaError(error);
     }
   }

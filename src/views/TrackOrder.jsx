@@ -6,13 +6,19 @@ import { Search, Package, Loader2, CheckCircle2, AlertCircle, Clock, Truck, Mess
 import { waLink } from "@/lib/brand";
 
 const STATUS_STEPS = [
-    { key: "PLACED", label: "Order Placed", desc: "Order details received & verified" },
-    { key: "DESIGN_IN_PROGRESS", label: "Design & Proofing", desc: "Artwork preparation & proof review" },
-    { key: "PRINTING", label: "Printing in Progress", desc: "Production & press run underway" },
-    { key: "FINISHING", label: "Finishing & Quality Check", desc: "Cutting, lamination, binding & QC" },
-    { key: "DISPATCHED", label: "Dispatched / Out for Delivery", desc: "Handed over to delivery or courier" },
-    { key: "DELIVERED", label: "Delivered", desc: "Delivered to customer" },
+    { key: "PLACED", label: "Order Placed & Awaiting Approval", desc: "Order details received & verified. Awaiting admin review & approval." },
+    { key: "DESIGN_IN_PROGRESS", label: "Approved & In Design", desc: "Approved by Admin. Artwork preparation & proof review underway." },
+    { key: "PRINTING", label: "Printing in Progress", desc: "Production & press run underway." },
+    { key: "FINISHING", label: "Finishing & Quality Check", desc: "Cutting, lamination, binding & QC." },
+    { key: "DISPATCHED", label: "Dispatched / Out for Delivery", desc: "Handed over to delivery or courier." },
+    { key: "DELIVERED", label: "Delivered", desc: "Delivered to customer." },
 ];
+
+function isOrderApproved(order) {
+    if (!order) return false;
+    const history = Array.isArray(order.status_history) ? order.status_history : [];
+    return history.some((h) => h.status === "APPROVED" || h.status === "DESIGN_APPROVAL" || h.status === "PRINTING");
+}
 
 function mapStatusToStep(status = "") {
     const s = String(status).toUpperCase();
@@ -202,6 +208,32 @@ export default function TrackOrder() {
                                 </div>
                             </div>
 
+                            {/* Approval Banner */}
+                            {!isOrderApproved(order) ? (
+                                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 flex items-start gap-3">
+                                    <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-bold text-sm">Awaiting Admin Review & Approval</p>
+                                        <p className="text-amber-800 mt-0.5">
+                                            Your order has been recorded and payment verified. Our production team is currently verifying the print specifications and design artwork before scheduling on our presses.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-900 flex items-center justify-between">
+                                    <div className="flex items-center gap-2.5">
+                                        <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                                        <div>
+                                            <p className="font-bold text-sm">Approved by Admin for Production</p>
+                                            <p className="text-emerald-700 mt-0.5">Specifications verified. Your order is officially approved and in progress.</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full uppercase">
+                                        Approved
+                                    </span>
+                                </div>
+                            )}
+
                             {/* Timeline steps */}
                             <div className="space-y-6 pt-2">
                                 <h3 className="font-heading font-bold text-base text-ink">Production & Delivery Timeline</h3>
@@ -235,6 +267,25 @@ export default function TrackOrder() {
                                     })}
                                 </div>
                             </div>
+
+                            {/* Status Audit History Log */}
+                            {Array.isArray(order.status_history) && order.status_history.length > 0 && (
+                                <div className="pt-4 border-t border-black/8">
+                                    <p className="text-xs font-bold text-ink uppercase tracking-wider mb-2.5">Status Updates & Approvals</p>
+                                    <div className="space-y-2">
+                                        {[...order.status_history].reverse().map((h, i) => (
+                                            <div key={i} className="rounded-lg bg-muted/30 border border-black/5 p-2.5 text-xs">
+                                                <div className="flex items-center justify-between font-semibold text-ink">
+                                                    <span>{h.label || (h.status ? h.status.replace(/_/g, " ") : "Update")}</span>
+                                                    <span className="text-[10px] text-ink-soft font-normal">{new Date(h.timestamp).toLocaleString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                                                </div>
+                                                {h.note && <p className="text-ink-soft text-[11px] mt-1">{h.note}</p>}
+                                                {h.approved_by && <p className="text-emerald-700 font-semibold text-[10px] mt-0.5">Approved by: {h.approved_by}</p>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Additional info footer */}
                             <div className="pt-6 border-t border-black/8 flex flex-wrap items-center justify-between gap-4 text-xs text-ink-soft">

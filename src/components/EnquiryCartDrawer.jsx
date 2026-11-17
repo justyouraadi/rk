@@ -1,10 +1,12 @@
-import React from "react";
-import { X, Trash2, ShoppingCart, ArrowRight, MessageCircle } from "lucide-react";
+import React, { useState } from "react";
+import { X, Trash2, ShoppingCart, ArrowRight, MessageCircle, Zap } from "lucide-react";
 import { useEnquiry } from "@/lib/EnquiryContext";
 import { waLink } from "@/lib/brand";
+import OrderCheckoutModal from "./OrderCheckoutModal";
 
 export default function EnquiryCartDrawer() {
     const { items, open, setOpen, removeItem, clearAll } = useEnquiry();
+    const [checkoutOpen, setCheckoutOpen] = useState(false);
     if (!open) return null;
 
     const waMessage = () => {
@@ -54,16 +56,28 @@ export default function EnquiryCartDrawer() {
 
                 {items.length > 0 && (
                     <div className="border-t border-black/8 p-4 space-y-2">
-                        <a href="/get-quote?from_enquiry=1" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 rounded-lg bg-rk-red text-white py-3 text-sm font-semibold hover:opacity-90">
+                        <button
+                            onClick={() => setCheckoutOpen(true)}
+                            className="w-full flex items-center justify-center gap-2 rounded-lg bg-rk-red text-white py-3 text-sm font-semibold hover:opacity-90 shadow-md shadow-rk-red/20"
+                        >
+                            <Zap className="h-4 w-4" /> Order All Now
+                        </button>
+                        <a href="/get-quote?from_enquiry=1" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-black/15 bg-white text-ink py-2.5 text-sm font-semibold hover:bg-muted">
                             Request Quote for All <ArrowRight className="h-4 w-4" />
                         </a>
-                        <a href={waMessage()} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-lg border border-black/15 text-ink py-3 text-sm font-semibold hover:bg-muted">
+                        <a href={waMessage()} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-lg border border-black/15 text-ink py-2.5 text-sm font-semibold hover:bg-muted">
                             <MessageCircle className="h-4 w-4" /> Send on WhatsApp
                         </a>
                         <button onClick={clearAll} className="w-full text-center text-xs text-ink-soft hover:text-red-500 pt-1">Clear all</button>
                     </div>
                 )}
             </div>
+
+            <OrderCheckoutModal
+                open={checkoutOpen}
+                onClose={() => setCheckoutOpen(false)}
+                cartItems={items}
+            />
         </div>
     );
 }

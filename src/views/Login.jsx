@@ -23,7 +23,8 @@ export default function Login() {
         setLoading(true);
         try {
             await api.auth.loginViaEmailPassword(email, password);
-            window.location.href = returnTo;
+            const destination = (!returnTo || returnTo === "/") ? "/profile" : returnTo;
+            window.location.href = destination;
         } catch (err) {
             setError(err.message || "Invalid email or password");
         } finally {
